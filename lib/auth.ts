@@ -18,6 +18,9 @@ export const useAuth = create<AuthState>((set) => ({
   loading: true,
 
   login: async (email, password) => {
+    try {
+      await account.deleteSession('current');
+    } catch {}
     await account.createEmailPasswordSession(email, password);
     const accountData = await account.get();
     const userDoc = await databases.listDocuments(
@@ -33,6 +36,9 @@ export const useAuth = create<AuthState>((set) => ({
   },
 
   register: async (email, password, name, role) => {
+    try {
+      await account.deleteSession('current');
+    } catch {}
     const acc = await account.create(ID.unique(), email, password, name);
     await account.createEmailPasswordSession(email, password);
     const userDoc = await databases.createDocument(
