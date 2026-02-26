@@ -21,7 +21,14 @@ export default function Login() {
       toast.success('Welcome back!');
       router.push('/dashboard');
     } catch (error: any) {
-      toast.error(error.message || 'Login failed');
+      console.error('Login error:', error);
+      if (error.code === 401) {
+        toast.error('Invalid email or password. Please check your credentials.');
+      } else if (error.message?.includes('session')) {
+        toast.error('Session error. Please refresh the page and try again.');
+      } else {
+        toast.error(error.message || 'Login failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
