@@ -1,12 +1,12 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import toast from 'react-hot-toast';
 import { Briefcase } from 'lucide-react';
 
-export default function Register() {
+function RegisterForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -81,5 +81,13 @@ export default function Register() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function Register() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <RegisterForm />
+    </Suspense>
   );
 }
