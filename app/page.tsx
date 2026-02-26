@@ -226,14 +226,16 @@ export default function Home() {
               <Link href="/register?role=employee" className="btn btn-primary px-8 py-3 font-semibold">Start Your Job Search</Link>
             </div>
             <div className="relative">
-              <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-3xl p-12 text-center">
-                <div className="w-48 h-48 mx-auto mb-6 bg-gradient-to-br from-primary-200 to-primary-300 rounded-full flex items-center justify-center">
-                  <svg className="w-32 h-32 text-primary-700" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                  </svg>
-                </div>
-                <h3 className="text-3xl font-bold mb-4">1000+ Jobs</h3>
-                <p className="text-xl text-gray-600">Posted this week</p>
+              <div className="rounded-3xl overflow-hidden shadow-2xl">
+                <img 
+                  src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&h=600&fit=crop" 
+                  alt="Job seeker" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="absolute -bottom-6 -right-6 bg-white rounded-2xl shadow-xl p-6">
+                <h3 className="text-2xl font-bold mb-2">1000+ Jobs</h3>
+                <p className="text-gray-600">Posted this week</p>
               </div>
             </div>
           </div>
