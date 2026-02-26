@@ -1,13 +1,33 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Briefcase, Users, TrendingUp, Search, MapPin, Building2, Clock, ArrowRight } from 'lucide-react';
+import { Briefcase, Users, TrendingUp, Search, MapPin, Building2, Clock, ArrowRight, DollarSign } from 'lucide-react';
+import { databases } from '@/lib/appwrite';
+import { Query } from 'appwrite';
 
 export default function Home() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [location, setLocation] = useState('');
+  const [latestJobs, setLatestJobs] = useState<any[]>([]);
+
+  useEffect(() => {
+    loadLatestJobs();
+  }, []);
+
+  const loadLatestJobs = async () => {
+    try {
+      const result = await databases.listDocuments(
+        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+        process.env.NEXT_PUBLIC_APPWRITE_JOBS_COLLECTION_ID!,
+        [Query.equal('status', 'active'), Query.orderDesc('createdAt'), Query.limit(5)]
+      );
+      setLatestJobs(result.documents);
+    } catch (error) {
+      console.error('Failed to load jobs:', error);
+    }
+  };
 
   const handleSearch = () => {
     router.push(`/jobs?search=${searchQuery}&location=${location}`);
@@ -75,6 +95,55 @@ export default function Home() {
               <Building2 className="w-5 h-5" />
               I'm Hiring Talent
             </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center mb-12">
+            <div>
+              <h2 className="text-4xl font-bold mb-2">Latest Job Openings</h2>
+              <p className="text-xl text-gray-600">Fresh opportunities posted recently</p>
+            </div>
+            <Link href="/jobs" className="btn btn-primary">View All Jobs</Link>
+          </div>
+          <div className="grid gap-6">
+            {latestJobs.map(job => (
+              <Link key={job.$id} href={`/jobs/${job.$id}`} className="card hover:shadow-lg transition-shadow border-l-4 border-primary-600">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h3 className="text-2xl font-semibold mb-2">{job.title}</h3>
+                    <p className="text-lg text-gray-600 mb-4">{job.company}</p>
+                    <div className="flex flex-wrap gap-4 text-gray-600">
+                      <span className="flex items-center gap-2">
+                        <MapPin className="w-5 h-5" />
+                        {job.location}
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <Briefcase className="w-5 h-5" />
+                        {job.type}
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <DollarSign className="w-5 h-5" />
+                        {job.currency} {job.salaryMin?.toLocaleString()} - {job.salaryMax?.toLocaleString()}
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <Clock className="w-5 h-5" />
+                        {new Date(job.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                  <ArrowRight className="w-6 h-6 text-primary-600" />
+                </div>
+              </Link>
+            ))}
+            {latestJobs.length === 0 && (
+              <div className="text-center py-12 text-gray-500">
+                <Briefcase className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <p className="text-xl">No jobs available yet</p>
+              </div>
+            )}
           </div>
         </div>
       </section>
