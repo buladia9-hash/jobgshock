@@ -51,15 +51,15 @@ export default function Login() {
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="input" required />
           </div>
           <div className="mb-6">
-            <div className="flex justify-between items-center mb-2">
-              <label className="block text-sm font-medium">Password</label>
-              <Link href="/forgot-password" className="text-sm text-primary-600 hover:underline">Forgot password?</Link>
-            </div>
+            <label className="block text-sm font-medium mb-2">Password</label>
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="input" required />
           </div>
           <button type="submit" disabled={loading} className="btn btn-primary w-full">
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
+          <Link href="/forgot-password" className="btn btn-secondary w-full mt-3">
+            Forgot Password?
+          </Link>
           <p className="text-center mt-4 text-sm text-gray-600">
             Don't have an account? <Link href="/register" className="text-primary-600 hover:underline">Sign up</Link>
           </p>
