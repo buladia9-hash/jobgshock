@@ -83,6 +83,14 @@ export default function Home() {
                 </div>
                 <button onClick={handleSearch} className="btn bg-primary-600 text-white hover:bg-primary-700 px-8 py-4 whitespace-nowrap font-semibold rounded-xl">Search Jobs</button>
               </div>
+              <div className="flex flex-wrap gap-2 mt-4">
+                <span className="text-sm text-gray-600">Popular:</span>
+                <button onClick={() => { setSearchQuery('Developer'); handleSearch(); }} className="text-sm px-3 py-1 bg-primary-50 text-primary-700 rounded-full hover:bg-primary-100">Developer</button>
+                <button onClick={() => { setSearchQuery('Designer'); handleSearch(); }} className="text-sm px-3 py-1 bg-primary-50 text-primary-700 rounded-full hover:bg-primary-100">Designer</button>
+                <button onClick={() => { setSearchQuery('Manager'); handleSearch(); }} className="text-sm px-3 py-1 bg-primary-50 text-primary-700 rounded-full hover:bg-primary-100">Manager</button>
+                <button onClick={() => { setSearchQuery('Marketing'); handleSearch(); }} className="text-sm px-3 py-1 bg-primary-50 text-primary-700 rounded-full hover:bg-primary-100">Marketing</button>
+                <button onClick={() => { setSearchQuery('Sales'); handleSearch(); }} className="text-sm px-3 py-1 bg-primary-50 text-primary-700 rounded-full hover:bg-primary-100">Sales</button>
+              </div>
             </div>
           </div>
 
