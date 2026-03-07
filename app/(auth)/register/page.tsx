@@ -31,7 +31,7 @@ function RegisterForm() {
         process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
         process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!,
         ID.unique(),
-        { email, name, role, skills: '', createdAt: new Date().toISOString() }
+        { email, name, role, skills: '', createdAt: new Date() }
       );
       toast.success('Account created successfully!');
       router.push('/dashboard');
