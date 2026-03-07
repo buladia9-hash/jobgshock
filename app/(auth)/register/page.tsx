@@ -2,7 +2,8 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { registerUser } from '@/lib/auth-actions';
+import { account, databases } from '@/lib/appwrite';
+import { ID } from 'appwrite';
 import toast from 'react-hot-toast';
 import { Briefcase } from 'lucide-react';
 
@@ -24,7 +25,14 @@ function RegisterForm() {
     e.preventDefault();
     setLoading(true);
     try {
-      await registerUser(email, password, name, role);
+      await account.create(ID.unique(), email, password, name);
+      await account.createEmailPasswordSession(email, password);
+      await databases.createDocument(
+        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+        process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!,
+        ID.unique(),
+        { email, name, role, skills: '', createdAt: new Date().toISOString() }
+      );
       toast.success('Account created successfully!');
       router.push('/dashboard');
     } catch (error: any) {

@@ -2,7 +2,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { loginUser } from '@/lib/auth-actions';
+import { account, databases } from '@/lib/appwrite';
+import { Query } from 'appwrite';
 import toast from 'react-hot-toast';
 import { Briefcase } from 'lucide-react';
 
@@ -16,18 +17,12 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     try {
-      await loginUser(email, password);
+      await account.createEmailPasswordSession(email, password);
       toast.success('Welcome back!');
       router.push('/dashboard');
     } catch (error: any) {
       console.error('Login error:', error);
-      if (error.code === 401) {
-        toast.error('Invalid email or password. Please check your credentials.');
-      } else if (error.message?.includes('session')) {
-        toast.error('Session error. Please refresh the page and try again.');
-      } else {
-        toast.error(error.message || 'Login failed. Please try again.');
-      }
+      toast.error('Invalid email or password');
     } finally {
       setLoading(false);
     }
