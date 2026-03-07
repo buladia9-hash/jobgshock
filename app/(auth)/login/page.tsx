@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/lib/auth';
+import { loginUser } from '@/lib/auth-actions';
 import toast from 'react-hot-toast';
 import { Briefcase } from 'lucide-react';
 
@@ -10,14 +10,13 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await login(email, password);
+      await loginUser(email, password);
       toast.success('Welcome back!');
       router.push('/dashboard');
     } catch (error: any) {

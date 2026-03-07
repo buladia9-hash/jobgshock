@@ -2,7 +2,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/lib/auth';
+import { registerUser } from '@/lib/auth-actions';
 import toast from 'react-hot-toast';
 import { Briefcase } from 'lucide-react';
 
@@ -12,7 +12,6 @@ function RegisterForm() {
   const [name, setName] = useState('');
   const [role, setRole] = useState<'employee' | 'recruiter'>('employee');
   const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -25,7 +24,7 @@ function RegisterForm() {
     e.preventDefault();
     setLoading(true);
     try {
-      await register(email, password, name, role);
+      await registerUser(email, password, name, role);
       toast.success('Account created successfully!');
       router.push('/dashboard');
     } catch (error: any) {
