@@ -33,7 +33,10 @@ function RegisterForm() {
         ID.unique(),
         { email, name, role, skills: '', createdAt: new Date() }
       );
-      toast.success('Account created successfully!');
+      toast.success(
+        `🎉 Welcome aboard, ${name}! Your account has been created successfully. Let's find your dream job!`,
+        { duration: 5000 }
+      );
       router.push('/dashboard');
     } catch (error: any) {
       toast.error(error.message || 'Registration failed');
