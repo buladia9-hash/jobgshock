@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { account, databases } from '@/lib/appwrite';
 import { createNotification } from '@/lib/notification-actions';
-import { ID } from 'appwrite';
+import { ID, Query } from 'appwrite';
 import toast from 'react-hot-toast';
 import { Briefcase } from 'lucide-react';
 
@@ -38,7 +38,7 @@ function RegisterForm() {
       const userDoc = await databases.listDocuments(
         process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
         process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!,
-        [{ method: 'equal', attribute: 'email', values: [email] }]
+        [Query.equal('email', email)]
       );
       
       if (userDoc.documents[0]) {
