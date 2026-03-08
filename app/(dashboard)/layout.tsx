@@ -1,13 +1,17 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
-import { Briefcase, Home, FileText, User, LogOut, PlusCircle, Bell } from 'lucide-react';
+import { Briefcase, Home, FileText, User, LogOut, PlusCircle, Bell, X } from 'lucide-react';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, logout, checkAuth } = useAuth();
   const router = useRouter();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications] = useState([
+    { id: 1, title: 'Welcome!', message: 'Welcome to JobPortal', read: false },
+  ]);
 
   useEffect(() => {
     checkAuth();
@@ -57,10 +61,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   Post Job
                 </Link>
               )}
-              <button className="relative p-2 text-gray-600 hover:text-primary-600">
+              <button onClick={() => setShowNotifications(!showNotifications)} className="relative p-2 text-gray-600 hover:text-primary-600">
                 <Bell className="w-6 h-6" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                {notifications.some(n => !n.read) && (
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                )}
               </button>
+              
+              {showNotifications && (
+                <div className="absolute right-0 top-16 w-80 bg-white rounded-lg shadow-xl border z-50">
+                  <div className="p-4 border-b flex justify-between items-center">
+                    <h3 className="font-semibold">Notifications</h3>
+                    <button onClick={() => setShowNotifications(false)}>
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <div className="max-h-96 overflow-y-auto">
+                    {notifications.map(notif => (
+                      <div key={notif.id} className={`p-4 border-b hover:bg-gray-50 ${!notif.read ? 'bg-blue-50' : ''}`}>
+                        <h4 className="font-semibold text-sm">{notif.title}</h4>
+                        <p className="text-sm text-gray-600 mt-1">{notif.message}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               <Link href="/profile" className="flex items-center gap-2 text-gray-700 hover:text-primary-600">
                 <User className="w-5 h-5" />
                 {user.name}
