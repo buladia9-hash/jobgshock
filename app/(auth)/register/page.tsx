@@ -3,6 +3,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { account, databases } from '@/lib/appwrite';
+import { createNotification } from '@/lib/notification-actions';
 import { ID } from 'appwrite';
 import toast from 'react-hot-toast';
 import { Briefcase } from 'lucide-react';
@@ -33,6 +34,23 @@ function RegisterForm() {
         ID.unique(),
         { email, name, role, skills: '', createdAt: new Date() }
       );
+      
+      const userDoc = await databases.listDocuments(
+        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+        process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!,
+        [{ method: 'equal', attribute: 'email', values: [email] }]
+      );
+      
+      if (userDoc.documents[0]) {
+        await createNotification(
+          userDoc.documents[0].$id,
+          'welcome',
+          'Welcome to JobPortal! 🎉',
+          `Hi ${name}! Your account has been created successfully. Start exploring jobs or post your first job listing.`,
+          '/dashboard'
+        );
+      }
+      
       toast.success(
         `🎉 Welcome aboard, ${name}! Your account has been created successfully. Let's find your dream job!`,
         { duration: 5000 }

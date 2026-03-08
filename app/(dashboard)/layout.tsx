@@ -3,15 +3,37 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
+import { getNotifications, markNotificationAsRead } from '@/lib/notification-actions';
 import { Briefcase, Home, FileText, User, LogOut, PlusCircle, Bell, X } from 'lucide-react';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, logout, checkAuth } = useAuth();
   const router = useRouter();
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications] = useState([
-    { id: 1, title: 'Welcome!', message: 'Welcome to JobPortal', read: false },
-  ]);
+  const [notifications, setNotifications] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      loadNotifications();
+    }
+  }, [user]);
+
+  const loadNotifications = async () => {
+    if (!user) return;
+    const notifs = await getNotifications(user.$id);
+    setNotifications(notifs);
+  };
+
+  const handleNotificationClick = async (notif: any) => {
+    if (!notif.read) {
+      await markNotificationAsRead(notif.$id);
+      loadNotifications();
+    }
+    if (notif.link) {
+      router.push(notif.link);
+    }
+    setShowNotifications(false);
+  };
 
   useEffect(() => {
     checkAuth();
@@ -77,12 +99,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </button>
                   </div>
                   <div className="max-h-96 overflow-y-auto">
-                    {notifications.map(notif => (
-                      <div key={notif.id} className={`p-4 border-b hover:bg-gray-50 ${!notif.read ? 'bg-blue-50' : ''}`}>
-                        <h4 className="font-semibold text-sm">{notif.title}</h4>
-                        <p className="text-sm text-gray-600 mt-1">{notif.message}</p>
+                    {notifications.length > 0 ? (
+                      notifications.map(notif => (
+                        <div 
+                          key={notif.$id} 
+                          onClick={() => handleNotificationClick(notif)}
+                          className={`p-4 border-b hover:bg-gray-50 cursor-pointer ${!notif.read ? 'bg-blue-50' : ''}`}
+                        >
+                          <h4 className="font-semibold text-sm">{notif.title}</h4>
+                          <p className="text-sm text-gray-600 mt-1">{notif.message}</p>
+                          <p className="text-xs text-gray-400 mt-2">{new Date(notif.createdAt).toLocaleString()}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-8 text-center text-gray-500">
+                        <Bell className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                        <p>No notifications yet</p>
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
               )}
