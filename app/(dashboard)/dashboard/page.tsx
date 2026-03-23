@@ -52,10 +52,11 @@ export default function Dashboard() {
     });
 
     if (jobs.length > 0) {
+      const jobIds = jobs.map((j: any) => j.$id);
       const appsResult = await databases.listDocuments(
         process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
         process.env.NEXT_PUBLIC_APPWRITE_APPLICATIONS_COLLECTION_ID!,
-        [Query.equal('recruiterId', user!.$id), Query.orderDesc('appliedAt'), Query.limit(5)]
+        [Query.equal('jobId', jobIds), Query.orderDesc('appliedAt'), Query.limit(5)]
       );
       setRecentApplications(appsResult.documents);
     }

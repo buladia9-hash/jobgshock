@@ -53,8 +53,8 @@ export default function CreateJob() {
         recruiterName: user.name,
         status: 'active',
         applicationsCount: 0,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
       
       await databases.createDocument(
