@@ -52,7 +52,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href: '/jobs/create', icon: PlusCircle, label: 'Post a Job' },
     { href: '/applications', icon: Users, label: 'Applications' },
     { href: '/profile', icon: User, label: 'Company Profile' },
-    { href: '/profile', icon: Settings, label: 'Settings' },
+    { href: '/profile?tab=settings', icon: Settings, label: 'Settings' },
   ];
 
   const employeeNav = [
@@ -60,7 +60,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href: '/jobs', icon: Briefcase, label: 'Browse Jobs' },
     { href: '/applications', icon: FileText, label: 'My Applications' },
     { href: '/profile', icon: User, label: 'My Profile' },
-    { href: '/profile', icon: Settings, label: 'Settings' },
+    { href: '/profile?tab=settings', icon: Settings, label: 'Settings' },
   ];
 
   const navItems = user.role === 'recruiter' ? recruiterNav : employeeNav;
@@ -95,7 +95,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Nav Items */}
         <nav className="flex-1 p-4 space-y-1">
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive = pathname === item.href.split('?')[0];
             return (
               <Link
                 key={item.label}
@@ -212,7 +212,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <User className="w-4 h-4" />
                     My Profile
                   </Link>
-                  <Link href="/profile" className="flex items-center gap-2 px-4 py-3 hover:bg-gray-50 text-sm">
+                  <Link href="/profile?tab=settings" className="flex items-center gap-2 px-4 py-3 hover:bg-gray-50 text-sm">
                     <Settings className="w-4 h-4" />
                     Settings
                   </Link>
