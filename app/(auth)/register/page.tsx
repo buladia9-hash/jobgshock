@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { account, databases } from '@/lib/appwrite';
 import { createNotification } from '@/lib/notification-actions';
-import { ID, Query } from 'appwrite';
+import { ID } from 'appwrite';
 import toast from 'react-hot-toast';
 import { Briefcase } from 'lucide-react';
 
@@ -26,35 +26,25 @@ function RegisterForm() {
     e.preventDefault();
     setLoading(true);
     try {
+      try { await account.deleteSession('current'); } catch {}
       await account.create(ID.unique(), email, password, name);
       await account.createEmailPasswordSession(email, password);
-      await databases.createDocument(
+      const newDoc = await databases.createDocument(
         process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
         process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!,
         ID.unique(),
         { email, name, role, skills: '', createdAt: new Date().toISOString() }
       );
-      
-      const userDoc = await databases.listDocuments(
-        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-        process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!,
-        [Query.equal('email', email)]
+
+      await createNotification(
+        newDoc.$id,
+        'welcome',
+        'Welcome to JobPortal! 🎉',
+        `Hi ${name}! Your account has been created successfully.`,
+        '/dashboard'
       );
-      
-      if (userDoc.documents[0]) {
-        await createNotification(
-          userDoc.documents[0].$id,
-          'welcome',
-          'Welcome to JobPortal! 🎉',
-          `Hi ${name}! Your account has been created successfully. Start exploring jobs or post your first job listing.`,
-          '/dashboard'
-        );
-      }
-      
-      toast.success(
-        `🎉 Welcome aboard, ${name}! Your account has been created successfully. Let's find your dream job!`,
-        { duration: 5000 }
-      );
+
+      toast.success(`🎉 Welcome aboard, ${name}!`, { duration: 5000 });
       router.push('/dashboard');
     } catch (error: any) {
       toast.error(error.message || 'Registration failed');
