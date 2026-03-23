@@ -1,9 +1,10 @@
 'use server';
-import { databases } from './appwrite';
-import { ID, Query } from 'appwrite';
+import { createAdminClient } from './appwrite-server';
+import { ID, Query } from 'node-appwrite';
 
 export async function getNotifications(userId: string) {
   try {
+    const { databases } = createAdminClient();
     const result = await databases.listDocuments(
       process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
       process.env.NEXT_PUBLIC_APPWRITE_NOTIFICATIONS_COLLECTION_ID!,
@@ -18,6 +19,7 @@ export async function getNotifications(userId: string) {
 
 export async function createNotification(userId: string, type: string, title: string, message: string, link?: string) {
   try {
+    const { databases } = createAdminClient();
     await databases.createDocument(
       process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
       process.env.NEXT_PUBLIC_APPWRITE_NOTIFICATIONS_COLLECTION_ID!,
@@ -29,7 +31,7 @@ export async function createNotification(userId: string, type: string, title: st
         message,
         link: link || '',
         read: false,
-        createdAt: new Date()
+        createdAt: new Date().toISOString()
       }
     );
   } catch (error) {
@@ -39,6 +41,7 @@ export async function createNotification(userId: string, type: string, title: st
 
 export async function markNotificationAsRead(notificationId: string) {
   try {
+    const { databases } = createAdminClient();
     await databases.updateDocument(
       process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
       process.env.NEXT_PUBLIC_APPWRITE_NOTIFICATIONS_COLLECTION_ID!,
