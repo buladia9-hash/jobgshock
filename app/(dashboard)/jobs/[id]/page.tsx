@@ -5,7 +5,8 @@ import { useAuth } from '@/lib/auth';
 import { jobService, applicationService, storageService } from '@/lib/services';
 import { Job, Application } from '@/types';
 import toast from 'react-hot-toast';
-import { MapPin, Briefcase, DollarSign, Clock, CheckCircle } from 'lucide-react';
+import { MapPin, Briefcase, DollarSign, Clock, CheckCircle, Trash2 } from 'lucide-react';
+import { deleteJob } from '@/lib/job-actions';
 
 export default function JobDetail() {
   const { id } = useParams();
@@ -18,6 +19,7 @@ export default function JobDetail() {
   const [coverLetter, setCoverLetter] = useState('');
   const [resume, setResume] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     loadJob();
@@ -60,6 +62,20 @@ export default function JobDetail() {
       loadJob();
     } catch (error: any) {
       toast.error(error.message || 'Failed to update status');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete this job? This cannot be undone.')) return;
+    setDeleting(true);
+    try {
+      await deleteJob(id as string);
+      toast.success('Job deleted successfully');
+      router.push('/jobs');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete job');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -137,6 +153,19 @@ export default function JobDetail() {
             </div>
           )}
         </div>
+
+        {user?.role === 'recruiter' && job.recruiterId === user.$id && (
+          <div className="mt-8 pt-6 border-t">
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="btn bg-red-600 text-white hover:bg-red-700 flex items-center gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              {deleting ? 'Deleting...' : 'Delete Job'}
+            </button>
+          </div>
+        )}
       </div>
 
       {user?.role === 'recruiter' && job.recruiterId === user.$id && (

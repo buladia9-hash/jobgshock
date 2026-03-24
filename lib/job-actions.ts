@@ -162,6 +162,15 @@ export async function updateApplicationStatus(id: string, status: string) {
   );
 }
 
+export async function deleteJob(id: string) {
+  const { databases } = createAdminClient();
+  return await databases.deleteDocument(
+    process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+    process.env.NEXT_PUBLIC_APPWRITE_JOBS_COLLECTION_ID!,
+    id
+  );
+}
+
 export async function getCurrentUser() {
   const sessionCookie = cookies().get('session');
   if (!sessionCookie) return null;
