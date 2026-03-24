@@ -2,11 +2,14 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
-import { jobService, applicationService, storageService } from '@/lib/services';
+import { databases } from '@/lib/appwrite';
+import { ID, Query } from 'appwrite';
+import { applyToJob, getApplicationsByJob } from '@/lib/job-actions';
+import { uploadFile, getFileUrl } from '@/lib/wasabi-server';
+import { deleteJob } from '@/lib/job-actions';
 import { Job, Application } from '@/types';
 import toast from 'react-hot-toast';
 import { MapPin, Briefcase, DollarSign, Clock, CheckCircle, Trash2 } from 'lucide-react';
-import { deleteJob } from '@/lib/job-actions';
 
 export default function JobDetail() {
   const { id } = useParams();
@@ -26,16 +29,36 @@ export default function JobDetail() {
   }, [id]);
 
   const loadJob = async () => {
-    const data = await jobService.getJobById(id as string);
-    setJob(data);
-    if (user?.role === 'recruiter' && data.recruiterId === user.$id) {
-      const apps = await applicationService.getApplicationsByJob(id as string);
-      setApplications(apps);
-      const urls: Record<string, string> = {};
-      for (const app of apps) {
-        urls[app.$id] = await storageService.getFileUrl(app.resumeId);
+    try {
+      const doc: any = await databases.getDocument(
+        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+        process.env.NEXT_PUBLIC_APPWRITE_JOBS_COLLECTION_ID!,
+        id as string
+      );
+      const data = {
+        ...doc,
+        salary: { min: Number(doc.salaryMin), max: Number(doc.salaryMax), currency: doc.currency },
+        requirements: doc.requirements?.split('\n').filter((r: string) => r.trim()) || [],
+        benefits: doc.benefits ? doc.benefits.split('\n').filter((b: string) => b.trim()) : [],
+        skills: doc.skills?.split(',').map((s: string) => s.trim()).filter((s: string) => s) || []
+      };
+      setJob(data);
+      if (user?.role === 'recruiter' && doc.recruiterId === user.$id) {
+        const appsResult = await databases.listDocuments(
+          process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+          process.env.NEXT_PUBLIC_APPWRITE_APPLICATIONS_COLLECTION_ID!,
+          [Query.equal('jobId', id as string)]
+        );
+        const apps = appsResult.documents as unknown as Application[];
+        setApplications(apps);
+        const urls: Record<string, string> = {};
+        for (const app of apps) {
+          if (app.resumeId) urls[app.$id] = await getFileUrl(app.resumeId);
+        }
+        setResumeUrls(urls);
       }
-      setResumeUrls(urls);
+    } catch (error) {
+      console.error('Failed to load job:', error);
     }
   };
 
@@ -43,8 +66,11 @@ export default function JobDetail() {
     if (!user || !resume) return;
     setLoading(true);
     try {
-      const uploadedResume = await storageService.uploadResume(resume);
-      await applicationService.applyToJob(id as string, user.$id, user.name, user.email, uploadedResume.$id, coverLetter);
+      const formData = new FormData();
+      formData.append('file', resume);
+      formData.append('folder', 'resumes');
+      const uploaded = await uploadFile(formData);
+      await applyToJob(id as string, user.$id, user.name, user.email, uploaded.$id, coverLetter);
       toast.success('Application submitted successfully!');
       setShowApplyModal(false);
       router.push('/applications');
@@ -57,7 +83,12 @@ export default function JobDetail() {
 
   const handleStatusUpdate = async (appId: string, status: Application['status']) => {
     try {
-      await applicationService.updateApplicationStatus(appId, status);
+      await databases.updateDocument(
+        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+        process.env.NEXT_PUBLIC_APPWRITE_APPLICATIONS_COLLECTION_ID!,
+        appId,
+        { status, updatedAt: new Date().toISOString() }
+      );
       toast.success('Application status updated');
       loadJob();
     } catch (error: any) {
