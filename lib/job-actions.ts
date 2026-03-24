@@ -11,8 +11,8 @@ export async function createJob(data: any) {
     company: data.company,
     location: data.location,
     type: data.type,
-    salaryMin: data.salary.min,
-    salaryMax: data.salary.max,
+    salaryMin: String(data.salary.min),
+    salaryMax: String(data.salary.max),
     currency: data.salary.currency,
     description: data.description,
     requirements: data.requirements.join('\n'),
@@ -48,7 +48,7 @@ export async function getJobs(filters?: { type?: string; search?: string; locati
   
   return result.documents.map((doc: any) => ({
     ...doc,
-    salary: { min: doc.salaryMin, max: doc.salaryMax, currency: doc.currency },
+    salary: { min: Number(doc.salaryMin), max: Number(doc.salaryMax), currency: doc.currency },
     requirements: doc.requirements.split('\n').filter((r: string) => r.trim()),
     benefits: doc.benefits ? doc.benefits.split('\n').filter((b: string) => b.trim()) : [],
     skills: doc.skills.split(',').map((s: string) => s.trim()).filter((s: string) => s)
@@ -66,7 +66,7 @@ export async function getJobById(id: string) {
   
   return {
     ...doc,
-    salary: { min: doc.salaryMin, max: doc.salaryMax, currency: doc.currency },
+    salary: { min: Number(doc.salaryMin), max: Number(doc.salaryMax), currency: doc.currency },
     requirements: doc.requirements.split('\n').filter((r: string) => r.trim()),
     benefits: doc.benefits ? doc.benefits.split('\n').filter((b: string) => b.trim()) : [],
     skills: doc.skills.split(',').map((s: string) => s.trim()).filter((s: string) => s)
@@ -84,7 +84,7 @@ export async function getRecruiterJobs(recruiterId: string) {
   
   return result.documents.map((doc: any) => ({
     ...doc,
-    salary: { min: doc.salaryMin, max: doc.salaryMax, currency: doc.currency },
+    salary: { min: Number(doc.salaryMin), max: Number(doc.salaryMax), currency: doc.currency },
     requirements: doc.requirements.split('\n').filter((r: string) => r.trim()),
     benefits: doc.benefits ? doc.benefits.split('\n').filter((b: string) => b.trim()) : [],
     skills: doc.skills.split(',').map((s: string) => s.trim()).filter((s: string) => s)
