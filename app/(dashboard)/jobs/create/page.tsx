@@ -52,7 +52,7 @@ export default function CreateJob() {
         recruiterId: user.$id,
         recruiterName: user.name,
         status: 'active',
-        applicationsCount: 0,
+        applicationsCount: '0',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };

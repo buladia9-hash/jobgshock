@@ -21,7 +21,7 @@ export async function createJob(data: any) {
     recruiterId: data.recruiterId,
     recruiterName: data.recruiterName,
     status: data.status,
-    applicationsCount: 0,
+    applicationsCount: '0',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
@@ -121,7 +121,7 @@ export async function applyToJob(jobId: string, employeeId: string, employeeName
     process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
     process.env.NEXT_PUBLIC_APPWRITE_JOBS_COLLECTION_ID!,
     jobId,
-    { applicationsCount: job.applicationsCount + 1 }
+    { applicationsCount: String(Number(job.applicationsCount) + 1) }
   );
   
   return app;
