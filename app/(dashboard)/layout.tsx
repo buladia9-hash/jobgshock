@@ -52,7 +52,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href: '/jobs/create', icon: PlusCircle, label: 'Post a Job' },
     { href: '/applications', icon: Users, label: 'Applications' },
     { href: '/profile', icon: User, label: 'Company Profile' },
-    { href: '/profile?tab=settings', icon: Settings, label: 'Settings' },
   ];
 
   const employeeNav = [
