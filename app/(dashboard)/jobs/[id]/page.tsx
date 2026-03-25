@@ -225,7 +225,9 @@ export default function JobDetail() {
                 </div>
                 <p className="text-gray-700 mb-3">{app.coverLetter}</p>
                 <div className="flex gap-2">
-                  <a href={resumeUrls[app.$id]} target="_blank" className="btn btn-secondary text-sm">View Resume</a>
+                  {resumeUrls[app.$id] && (
+                    <a href={resumeUrls[app.$id]} target="_blank" rel="noreferrer" className="btn btn-secondary text-sm">View Resume</a>
+                  )}
                   {app.status === 'pending' && (
                     <>
                       <button onClick={() => handleStatusUpdate(app.$id, 'shortlisted')} className="btn bg-blue-600 text-white hover:bg-blue-700 text-sm">Shortlist</button>
