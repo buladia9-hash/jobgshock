@@ -52,3 +52,36 @@ export async function markNotificationAsRead(notificationId: string) {
     console.error('Failed to mark notification as read:', error);
   }
 }
+
+export async function notifyJobSeekersNewJob(jobId: string, jobTitle: string, company: string, location: string) {
+  try {
+    const { databases } = createAdminClient();
+    // Fetch all job seekers
+    const result = await databases.listDocuments(
+      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+      process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!,
+      [Query.equal('role', 'employee'), Query.limit(500)]
+    );
+    // Send notification to each job seeker in parallel
+    await Promise.all(
+      result.documents.map((seeker: any) =>
+        databases.createDocument(
+          process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+          process.env.NEXT_PUBLIC_APPWRITE_NOTIFICATIONS_COLLECTION_ID!,
+          ID.unique(),
+          {
+            userId: seeker.$id,
+            type: 'job',
+            title: `New Job: ${jobTitle}`,
+            message: `${company} is hiring in ${location}. Check it out!`,
+            link: `/jobs/${jobId}`,
+            read: false,
+            createdAt: new Date().toISOString()
+          }
+        ).catch(() => {}) // skip if one fails
+      )
+    );
+  } catch (error) {
+    console.error('Failed to notify job seekers:', error);
+  }
+}

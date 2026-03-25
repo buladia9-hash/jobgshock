@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/auth';
 import { databases } from '@/lib/appwrite';
 import { ID } from 'appwrite';
 import toast from 'react-hot-toast';
+import { notifyJobSeekersNewJob } from '@/lib/notification-actions';
 import { Briefcase, DollarSign, MapPin, Clock, FileText, Award, Gift, X, Plus } from 'lucide-react';
 
 export default function CreateJob() {
@@ -57,13 +58,16 @@ export default function CreateJob() {
         updatedAt: new Date().toISOString()
       };
       
-      await databases.createDocument(
+      const newJob = await databases.createDocument(
         process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
         process.env.NEXT_PUBLIC_APPWRITE_JOBS_COLLECTION_ID!,
         ID.unique(),
         jobData
       );
-      
+
+      // Notify all job seekers in background
+      notifyJobSeekersNewJob(newJob.$id, formData.title, formData.company, formData.location);
+
       toast.success('Job posted successfully! 🎉');
       router.push('/jobs');
     } catch (error: any) {
