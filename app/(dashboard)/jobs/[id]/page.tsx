@@ -4,8 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { databases } from '@/lib/appwrite';
 import { ID, Query } from 'appwrite';
-import { applyToJob } from '@/lib/job-actions';
-import { deleteJob } from '@/lib/job-actions';
+import { applyToJob, deleteJob } from '@/lib/job-actions';
 import { Job, Application } from '@/types';
 import toast from 'react-hot-toast';
 import { MapPin, Briefcase, DollarSign, Clock, CheckCircle, Trash2 } from 'lucide-react';
@@ -51,9 +50,6 @@ export default function JobDetail() {
         const apps = appsResult.documents as unknown as Application[];
         setApplications(apps);
         const urls: Record<string, string> = {};
-        for (const app of apps) {
-          if (app.resumeId) urls[app.$id] = await getFileUrl(app.resumeId);
-        }
         setResumeUrls(urls);
       }
     } catch (error) {
