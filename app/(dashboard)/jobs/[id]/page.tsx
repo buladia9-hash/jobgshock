@@ -7,6 +7,7 @@ import { ID, Query } from 'appwrite';
 import { applyToJob, deleteJob } from '@/lib/job-actions';
 import { Job, Application } from '@/types';
 import toast from 'react-hot-toast';
+import Link from 'next/link';
 import { MapPin, Briefcase, DollarSign, Clock, CheckCircle, Trash2 } from 'lucide-react';
 
 export default function JobDetail() {
@@ -191,12 +192,27 @@ export default function JobDetail() {
         </div>
 
         {user?.role === 'recruiter' && job.recruiterId === user.$id && (
-          <div className="mt-8 pt-6 border-t">
+          <div className="mt-8 pt-6 border-t flex gap-3">
+            <Link href={`/jobs/${id}/edit`} className="btn btn-primary flex items-center gap-2">
+              ✏️ Edit Job
+            </Link>
             <button
-              onClick={handleDelete}
-              disabled={deleting}
-              className="btn bg-red-600 text-white hover:bg-red-700 flex items-center gap-2"
+              onClick={async () => {
+                const newStatus = job.status === 'active' ? 'closed' : 'active';
+                await databases.updateDocument(
+                  process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+                  process.env.NEXT_PUBLIC_APPWRITE_JOBS_COLLECTION_ID!,
+                  id as string,
+                  { status: newStatus }
+                );
+                setJob({ ...job, status: newStatus } as any);
+                toast.success(`Job ${newStatus === 'active' ? 'reopened' : 'closed'}`);
+              }}
+              className={`btn flex items-center gap-2 ${job.status === 'active' ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}
             >
+              {job.status === 'active' ? '🔒 Close Job' : '🔓 Reopen Job'}
+            </button>
+            <button onClick={handleDelete} disabled={deleting} className="btn bg-red-600 text-white hover:bg-red-700 flex items-center gap-2">
               <Trash2 className="w-4 h-4" />
               {deleting ? 'Deleting...' : 'Delete Job'}
             </button>

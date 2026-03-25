@@ -4,7 +4,8 @@ import { useAuth } from '@/lib/auth';
 import { databases } from '@/lib/appwrite';
 import { Query } from 'appwrite';
 import Link from 'next/link';
-import { Clock, ExternalLink, Briefcase } from 'lucide-react';
+import { Clock, ExternalLink, Briefcase, X } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function Applications() {
   const { user } = useAuth();
@@ -21,7 +22,6 @@ export default function Applications() {
         process.env.NEXT_PUBLIC_APPWRITE_APPLICATIONS_COLLECTION_ID!,
         [Query.equal('employeeId', user.$id), Query.orderDesc('appliedAt')]
       );
-
       const appsWithJobs = await Promise.all(
         appsResult.documents.map(async (app: any) => {
           let job = null;
@@ -34,9 +34,7 @@ export default function Applications() {
             );
           } catch {}
           if (app.resumeId) {
-            try {
-              resumeUrl = `${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.NEXT_PUBLIC_APPWRITE_STORAGE_BUCKET_ID}/files/${app.resumeId}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID}`;
-            } catch {}
+            resumeUrl = `${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.NEXT_PUBLIC_APPWRITE_STORAGE_BUCKET_ID}/files/${app.resumeId}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID}`;
           }
           return { ...app, job, resumeUrl };
         })
@@ -46,6 +44,21 @@ export default function Applications() {
       console.error('Failed to load applications:', error);
     }
     setLoading(false);
+  };
+
+  const handleWithdraw = async (appId: string) => {
+    if (!confirm('Withdraw this application?')) return;
+    try {
+      await databases.deleteDocument(
+        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+        process.env.NEXT_PUBLIC_APPWRITE_APPLICATIONS_COLLECTION_ID!,
+        appId
+      );
+      setApplications(prev => prev.filter(a => a.$id !== appId));
+      toast.success('Application withdrawn');
+    } catch {
+      toast.error('Failed to withdraw application');
+    }
   };
 
   if (loading) return <div className="text-center py-12">Loading...</div>;
@@ -88,9 +101,7 @@ export default function Applications() {
                     app.status === 'shortlisted' ? 'bg-blue-100 text-blue-800' :
                     app.status === 'reviewing' ? 'bg-purple-100 text-purple-800' :
                     'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {app.status}
-                  </span>
+                  }`}>{app.status}</span>
                   {app.resumeUrl && (
                     <a href={app.resumeUrl} target="_blank" className="flex items-center gap-1 text-sm text-primary-600 hover:underline">
                       View Resume <ExternalLink className="w-4 h-4" />
@@ -100,6 +111,11 @@ export default function Applications() {
                     <a href={`/messages?to=${app.job.recruiterId}&name=${encodeURIComponent(app.job.recruiterName || 'Recruiter')}`} className="flex items-center gap-1 text-sm text-blue-600 hover:underline">
                       💬 Chat with Recruiter
                     </a>
+                  )}
+                  {app.status === 'pending' && (
+                    <button onClick={() => handleWithdraw(app.$id)} className="flex items-center gap-1 text-sm text-red-600 hover:underline">
+                      <X className="w-4 h-4" /> Withdraw
+                    </button>
                   )}
                 </div>
               </div>

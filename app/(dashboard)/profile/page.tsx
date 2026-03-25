@@ -1,7 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
-import { storageService } from '@/lib/services';
 import toast from 'react-hot-toast';
 import { User, Mail, Phone, MapPin, Briefcase, Globe } from 'lucide-react';
 
@@ -55,14 +54,33 @@ export default function Profile() {
 
   if (!user) return null;
 
+  const fields = ['phone', 'location', 'bio', 'website', ...(user.role === 'employee' ? ['skills', 'experience', 'education'] : ['company'])];
+  const filled = fields.filter(f => {
+    const val = (user as any)[f];
+    return val && (Array.isArray(val) ? val.length > 0 : val.trim() !== '');
+  }).length;
+  const completion = Math.round((filled / fields.length) * 100);
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">My Profile</h1>
-        {!editing && (
-          <button onClick={() => setEditing(true)} className="btn btn-primary">Edit Profile</button>
-        )}
+        {!editing && <button onClick={() => setEditing(true)} className="btn btn-primary">Edit Profile</button>}
       </div>
+
+      {/* Profile Completion */}
+      {!editing && (
+        <div className="bg-white rounded-xl border p-4 mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-700">Profile Completion</span>
+            <span className={`text-sm font-bold ${completion === 100 ? 'text-green-600' : completion >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>{completion}%</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className={`h-2 rounded-full transition-all ${completion === 100 ? 'bg-green-500' : completion >= 60 ? 'bg-yellow-500' : 'bg-red-500'}`} style={{ width: `${completion}%` }} />
+          </div>
+          {completion < 100 && <p className="text-xs text-gray-500 mt-2">Complete your profile to stand out to recruiters</p>}
+        </div>
+      )}
 
       {editing ? (
         <form onSubmit={handleSubmit} className="card space-y-6">

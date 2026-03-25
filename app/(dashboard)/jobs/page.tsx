@@ -11,42 +11,40 @@ export default function Jobs() {
   const [jobs, setJobs] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
+  const [locationFilter, setLocationFilter] = useState('');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadJobs();
-  }, [user, typeFilter]);
+  useEffect(() => { loadJobs(); }, [user, typeFilter]);
 
   const loadJobs = async () => {
     setLoading(true);
     try {
-      const queries = [Query.equal('status', 'active'), Query.orderDesc('createdAt')];
+      const queries: any[] = [Query.orderDesc('createdAt')];
+      if (user?.role === 'recruiter') {
+        queries.push(Query.equal('recruiterId', user.$id));
+      } else {
+        queries.push(Query.equal('status', 'active'));
+      }
       if (typeFilter) queries.push(Query.equal('type', typeFilter));
-      
       const result = await databases.listDocuments(
         process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
         process.env.NEXT_PUBLIC_APPWRITE_JOBS_COLLECTION_ID!,
         queries
       );
-      
       setJobs(result.documents.map((doc: any) => ({
         ...doc,
-        salary: { min: doc.salaryMin, max: doc.salaryMax, currency: doc.currency },
-        requirements: doc.requirements?.split('\n').filter((r: string) => r.trim()) || [],
-        benefits: doc.benefits ? doc.benefits.split('\n').filter((b: string) => b.trim()) : [],
+        salary: { min: Number(doc.salaryMin), max: Number(doc.salaryMax), currency: doc.currency },
         skills: doc.skills?.split(',').map((s: string) => s.trim()).filter((s: string) => s) || []
       })));
-    } catch (error) {
-      console.error('Failed to load jobs:', error);
-    }
+    } catch (error) { console.error('Failed to load jobs:', error); }
     setLoading(false);
   };
 
-  const filteredJobs = jobs.filter(job =>
-    job.title?.toLowerCase().includes(search.toLowerCase()) ||
-    job.company?.toLowerCase().includes(search.toLowerCase()) ||
-    job.location?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredJobs = jobs.filter(job => {
+    const matchSearch = !search || job.title?.toLowerCase().includes(search.toLowerCase()) || job.company?.toLowerCase().includes(search.toLowerCase()) || job.location?.toLowerCase().includes(search.toLowerCase());
+    const matchLocation = !locationFilter || job.location?.toLowerCase().includes(locationFilter.toLowerCase());
+    return matchSearch && matchLocation;
+  });
 
   return (
     <div>
@@ -58,14 +56,9 @@ export default function Jobs() {
       <div className="bg-white rounded-xl shadow-sm border p-6 mb-8">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
-            <input
-              type="text"
-              placeholder="Search by title, company, or location..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="input"
-            />
+            <input type="text" placeholder="Search by title, company, or location..." value={search} onChange={(e) => setSearch(e.target.value)} className="input" />
           </div>
+          <input type="text" placeholder="Filter by location..." value={locationFilter} onChange={(e) => setLocationFilter(e.target.value)} className="input md:w-48" />
           <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="input md:w-48">
             <option value="">All Types</option>
             <option value="full-time">Full Time</option>
