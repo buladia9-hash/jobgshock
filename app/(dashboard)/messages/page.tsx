@@ -30,7 +30,7 @@ function MessagesContent() {
       setActiveConvo(convo);
       loadMessages(toId);
     }
-  }, [toId, toName, user]);
+  }, [toId, toName, user?.$id]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });

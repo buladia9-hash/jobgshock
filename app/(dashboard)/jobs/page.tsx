@@ -14,7 +14,7 @@ export default function Jobs() {
   const [locationFilter, setLocationFilter] = useState('');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => { loadJobs(); }, [user, typeFilter]);
+  useEffect(() => { if (user) loadJobs(); }, [user, typeFilter]);
 
   const loadJobs = async () => {
     setLoading(true);
@@ -126,7 +126,7 @@ export default function Jobs() {
                 
                 <div className="mt-auto pt-4 border-t flex items-center justify-between">
                   {user?.role === 'recruiter' ? (
-                    <span className="text-sm text-gray-600">{job.applicationsCount} applicants</span>
+                    <span className="text-sm text-gray-600">{Number(job.applicationsCount) || 0} applicants</span>
                   ) : (
                     <span className="text-sm font-medium text-primary-600">View Details</span>
                   )}

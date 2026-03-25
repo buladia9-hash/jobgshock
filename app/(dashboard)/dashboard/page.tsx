@@ -43,7 +43,7 @@ export default function Dashboard() {
     );
     const jobs = jobsResult.documents;
     setRecentJobs(jobs.slice(0, 5));
-    const totalApps = jobs.reduce((sum: number, job: any) => sum + (job.applicationsCount || 0), 0);
+    const totalApps = jobs.reduce((sum: number, job: any) => sum + (Number(job.applicationsCount) || 0), 0);
     setStats({
       jobs: jobs.length,
       applications: totalApps,
@@ -187,7 +187,7 @@ export default function Dashboard() {
               <div className="text-center py-8 text-gray-400">Loading...</div>
             ) : recentApplications.length > 0 ? recentApplications.map((app: any) => (
               <div key={app.$id} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl transition-colors">
-                <div className="w-10 h-10 bg-gradient-to-br from-secondary-500 to-secondary-700 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-700 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
                   {(isRecruiter ? app.employeeName : app.jobTitle)?.charAt(0)?.toUpperCase() || 'A'}
                 </div>
                 <div className="flex-1 min-w-0">
