@@ -1,37 +1,53 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
-import { applicationService, jobService, storageService } from '@/lib/services';
-import { Application, Job } from '@/types';
+import { databases, storage } from '@/lib/appwrite';
+import { Query } from 'appwrite';
 import Link from 'next/link';
-import { Clock, ExternalLink } from 'lucide-react';
+import { Clock, ExternalLink, Briefcase } from 'lucide-react';
 
 export default function Applications() {
   const { user } = useAuth();
-  const [applications, setApplications] = useState<(Application & { job?: Job; resumeUrl?: string })[]>([]);
+  const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!user) return;
-    loadApplications();
-  }, [user]);
+  useEffect(() => { if (user) loadApplications(); }, [user]);
 
   const loadApplications = async () => {
     if (!user) return;
-    const apps = await applicationService.getApplicationsByEmployee(user.$id);
-    const appsWithJobsAndUrls = await Promise.all(
-      apps.map(async (app) => {
-        try {
-          const job = await jobService.getJobById(app.jobId);
-          const resumeUrl = await storageService.getFileUrl(app.resumeId);
+    try {
+      const appsResult = await databases.listDocuments(
+        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+        process.env.NEXT_PUBLIC_APPWRITE_APPLICATIONS_COLLECTION_ID!,
+        [Query.equal('employeeId', user.$id), Query.orderDesc('appliedAt')]
+      );
+
+      const appsWithJobs = await Promise.all(
+        appsResult.documents.map(async (app: any) => {
+          let job = null;
+          let resumeUrl = '';
+          try {
+            job = await databases.getDocument(
+              process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+              process.env.NEXT_PUBLIC_APPWRITE_JOBS_COLLECTION_ID!,
+              app.jobId
+            );
+          } catch {}
+          if (app.resumeId) {
+            try {
+              resumeUrl = storage.getFileView(
+                process.env.NEXT_PUBLIC_APPWRITE_STORAGE_BUCKET_ID!,
+                app.resumeId
+              ).href;
+            } catch {}
+          }
           return { ...app, job, resumeUrl };
-        } catch {
-          const resumeUrl = await storageService.getFileUrl(app.resumeId);
-          return { ...app, resumeUrl };
-        }
-      })
-    );
-    setApplications(appsWithJobsAndUrls);
+        })
+      );
+      setApplications(appsWithJobs);
+    } catch (error) {
+      console.error('Failed to load applications:', error);
+    }
     setLoading(false);
   };
 
@@ -40,9 +56,9 @@ export default function Applications() {
   return (
     <div>
       <h1 className="text-3xl font-bold mb-8">My Applications</h1>
-
       {applications.length === 0 ? (
         <div className="card text-center py-12">
+          <Briefcase className="w-16 h-16 mx-auto mb-4 text-gray-300" />
           <p className="text-gray-600 mb-4">You haven't applied to any jobs yet</p>
           <Link href="/jobs" className="btn btn-primary">Browse Jobs</Link>
         </div>
@@ -66,10 +82,10 @@ export default function Applications() {
                     <Clock className="w-4 h-4" />
                     Applied {new Date(app.appliedAt).toLocaleDateString()}
                   </div>
-                  <p className="text-gray-700 mt-3 line-clamp-2">{app.coverLetter}</p>
+                  {app.coverLetter && <p className="text-gray-700 mt-3 line-clamp-2">{app.coverLetter}</p>}
                 </div>
-                <div className="text-right ml-4">
-                  <span className={`px-3 py-1 rounded-full text-sm inline-block mb-3 ${
+                <div className="text-right ml-4 flex flex-col items-end gap-3">
+                  <span className={`px-3 py-1 rounded-full text-sm ${
                     app.status === 'accepted' ? 'bg-green-100 text-green-800' :
                     app.status === 'rejected' ? 'bg-red-100 text-red-800' :
                     app.status === 'shortlisted' ? 'bg-blue-100 text-blue-800' :
@@ -78,9 +94,11 @@ export default function Applications() {
                   }`}>
                     {app.status}
                   </span>
-                  <a href={app.resumeUrl} target="_blank" className="flex items-center gap-1 text-sm text-primary-600 hover:underline">
-                    View Resume <ExternalLink className="w-4 h-4" />
-                  </a>
+                  {app.resumeUrl && (
+                    <a href={app.resumeUrl} target="_blank" className="flex items-center gap-1 text-sm text-primary-600 hover:underline">
+                      View Resume <ExternalLink className="w-4 h-4" />
+                    </a>
+                  )}
                 </div>
               </div>
             </div>

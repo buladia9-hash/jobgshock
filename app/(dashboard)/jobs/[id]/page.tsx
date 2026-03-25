@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
-import { databases } from '@/lib/appwrite';
+import { databases, storage } from '@/lib/appwrite';
 import { ID, Query } from 'appwrite';
 import { applyToJob, deleteJob } from '@/lib/job-actions';
 import { Job, Application } from '@/types';
@@ -50,6 +50,17 @@ export default function JobDetail() {
         const apps = appsResult.documents as unknown as Application[];
         setApplications(apps);
         const urls: Record<string, string> = {};
+        for (const app of apps) {
+          if (app.resumeId) {
+            try {
+              const result = storage.getFileView(
+                process.env.NEXT_PUBLIC_APPWRITE_STORAGE_BUCKET_ID!,
+                app.resumeId
+              );
+              urls[app.$id] = result.href;
+            } catch {}
+          }
+        }
         setResumeUrls(urls);
       }
     } catch (error) {
@@ -61,7 +72,16 @@ export default function JobDetail() {
     if (!user) return;
     setLoading(true);
     try {
-      await applyToJob(id as string, user.$id, user.name, user.email, '', coverLetter);
+      let resumeId = '';
+      if (resume) {
+        const uploaded = await storage.createFile(
+          process.env.NEXT_PUBLIC_APPWRITE_STORAGE_BUCKET_ID!,
+          ID.unique(),
+          resume
+        );
+        resumeId = uploaded.$id;
+      }
+      await applyToJob(id as string, user.$id, user.name, user.email, resumeId, coverLetter);
       toast.success('Application submitted successfully!');
       setShowApplyModal(false);
       router.push('/applications');
@@ -239,6 +259,10 @@ export default function JobDetail() {
               <div>
                 <label className="block text-sm font-medium mb-2">Cover Letter</label>
                 <textarea value={coverLetter} onChange={(e) => setCoverLetter(e.target.value)} className="input" rows={4} placeholder="Tell us why you're a great fit..." required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Resume (PDF)</label>
+                <input type="file" accept=".pdf,.doc,.docx" onChange={(e) => setResume(e.target.files?.[0] || null)} className="input" />
               </div>
               <div className="flex gap-4">
                 <button onClick={handleApply} disabled={loading} className="btn btn-primary flex-1">
