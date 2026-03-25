@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
-import { databases, storage } from '@/lib/appwrite';
+import { databases } from '@/lib/appwrite';
 import { Query } from 'appwrite';
 import Link from 'next/link';
 import { Clock, ExternalLink, Briefcase } from 'lucide-react';
@@ -35,10 +35,7 @@ export default function Applications() {
           } catch {}
           if (app.resumeId) {
             try {
-              resumeUrl = storage.getFileView(
-                process.env.NEXT_PUBLIC_APPWRITE_STORAGE_BUCKET_ID!,
-                app.resumeId
-              ).href;
+              resumeUrl = `${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.NEXT_PUBLIC_APPWRITE_STORAGE_BUCKET_ID}/files/${app.resumeId}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID}`;
             } catch {}
           }
           return { ...app, job, resumeUrl };
