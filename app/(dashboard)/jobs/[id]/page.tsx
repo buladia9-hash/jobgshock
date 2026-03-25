@@ -4,8 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { databases } from '@/lib/appwrite';
 import { ID, Query } from 'appwrite';
-import { applyToJob, getApplicationsByJob } from '@/lib/job-actions';
-import { uploadFile, getFileUrl } from '@/lib/wasabi-server';
+import { applyToJob } from '@/lib/job-actions';
 import { deleteJob } from '@/lib/job-actions';
 import { Job, Application } from '@/types';
 import toast from 'react-hot-toast';
@@ -63,14 +62,10 @@ export default function JobDetail() {
   };
 
   const handleApply = async () => {
-    if (!user || !resume) return;
+    if (!user) return;
     setLoading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', resume);
-      formData.append('folder', 'resumes');
-      const uploaded = await uploadFile(formData);
-      await applyToJob(id as string, user.$id, user.name, user.email, uploaded.$id, coverLetter);
+      await applyToJob(id as string, user.$id, user.name, user.email, '', coverLetter);
       toast.success('Application submitted successfully!');
       setShowApplyModal(false);
       router.push('/applications');
@@ -249,12 +244,8 @@ export default function JobDetail() {
                 <label className="block text-sm font-medium mb-2">Cover Letter</label>
                 <textarea value={coverLetter} onChange={(e) => setCoverLetter(e.target.value)} className="input" rows={4} placeholder="Tell us why you're a great fit..." required />
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Resume (PDF)</label>
-                <input type="file" accept=".pdf" onChange={(e) => setResume(e.target.files?.[0] || null)} className="input" required />
-              </div>
               <div className="flex gap-4">
-                <button onClick={handleApply} disabled={loading || !resume} className="btn btn-primary flex-1">
+                <button onClick={handleApply} disabled={loading} className="btn btn-primary flex-1">
                   {loading ? 'Submitting...' : 'Submit Application'}
                 </button>
                 <button onClick={() => setShowApplyModal(false)} className="btn btn-secondary">Cancel</button>
