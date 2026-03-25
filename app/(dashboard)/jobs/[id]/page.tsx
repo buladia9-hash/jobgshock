@@ -228,6 +228,9 @@ export default function JobDetail() {
                   {resumeUrls[app.$id] && (
                     <a href={resumeUrls[app.$id]} target="_blank" rel="noreferrer" className="btn btn-secondary text-sm">View Resume</a>
                   )}
+                  <a href={`/messages?to=${app.employeeId}&name=${encodeURIComponent(app.employeeName)}`} className="btn btn-secondary text-sm flex items-center gap-1">
+                    💬 Chat
+                  </a>
                   {app.status === 'pending' && (
                     <>
                       <button onClick={() => handleStatusUpdate(app.$id, 'shortlisted')} className="btn bg-blue-600 text-white hover:bg-blue-700 text-sm">Shortlist</button>

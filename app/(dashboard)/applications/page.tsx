@@ -96,6 +96,11 @@ export default function Applications() {
                       View Resume <ExternalLink className="w-4 h-4" />
                     </a>
                   )}
+                  {app.job?.recruiterId && (
+                    <a href={`/messages?to=${app.job.recruiterId}&name=${encodeURIComponent(app.job.recruiterName || 'Recruiter')}`} className="flex items-center gap-1 text-sm text-blue-600 hover:underline">
+                      💬 Chat with Recruiter
+                    </a>
+                  )}
                 </div>
               </div>
             </div>

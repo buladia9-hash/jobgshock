@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/auth';
 import { getNotifications, markNotificationAsRead } from '@/lib/notification-actions';
 import {
   Briefcase, LayoutDashboard, FileText, User, LogOut,
-  PlusCircle, Bell, X, Users, Settings, ChevronDown, Menu
+  PlusCircle, Bell, X, Users, Settings, ChevronDown, Menu, MessageSquare
 } from 'lucide-react';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -51,6 +51,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href: '/jobs', icon: Briefcase, label: 'My Jobs' },
     { href: '/jobs/create', icon: PlusCircle, label: 'Post a Job' },
     { href: '/applications', icon: Users, label: 'Applications' },
+    { href: '/messages', icon: MessageSquare, label: 'Messages' },
     { href: '/profile', icon: User, label: 'Company Profile' },
   ];
 
@@ -58,6 +59,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { href: '/jobs', icon: Briefcase, label: 'Browse Jobs' },
     { href: '/applications', icon: FileText, label: 'My Applications' },
+    { href: '/messages', icon: MessageSquare, label: 'Messages' },
     { href: '/profile', icon: User, label: 'My Profile' },
     { href: '/profile?tab=settings', icon: Settings, label: 'Settings' },
   ];
