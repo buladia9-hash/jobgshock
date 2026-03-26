@@ -1,8 +1,9 @@
 'use server';
 import { createAdminClient } from './appwrite-server';
 import { ID, Query } from 'node-appwrite';
+import type { Notification } from '@/types';
 
-export async function getNotifications(userId: string) {
+export async function getNotifications(userId: string): Promise<Notification[]> {
   try {
     const { databases } = createAdminClient();
     const result = await databases.listDocuments(
@@ -10,14 +11,20 @@ export async function getNotifications(userId: string) {
       process.env.NEXT_PUBLIC_APPWRITE_NOTIFICATIONS_COLLECTION_ID!,
       [Query.equal('userId', userId), Query.orderDesc('createdAt'), Query.limit(20)]
     );
-    return result.documents;
+    return result.documents as unknown as Notification[];
   } catch (error) {
     console.error('Failed to fetch notifications:', error);
     return [];
   }
 }
 
-export async function createNotification(userId: string, type: string, title: string, message: string, link?: string) {
+export async function createNotification(
+  userId: string,
+  type: Notification['type'],
+  title: string,
+  message: string,
+  link?: string
+) {
   try {
     const { databases } = createAdminClient();
     await databases.createDocument(
