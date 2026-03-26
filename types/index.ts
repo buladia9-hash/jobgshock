@@ -62,7 +62,7 @@ export interface Message {
 export interface Notification {
   $id: string;
   userId: string;
-  type: 'application' | 'message' | 'job' | 'status';
+  type: 'application' | 'message' | 'job' | 'status' | 'welcome';
   title: string;
   message: string;
   read: boolean;
