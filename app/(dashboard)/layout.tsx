@@ -1,9 +1,10 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { getNotifications, markNotificationAsRead } from '@/lib/notification-actions';
+import type { Notification } from '@/types';
 import {
   Briefcase, LayoutDashboard, FileText, User, LogOut,
   PlusCircle, Bell, X, Users, Settings, ChevronDown, Menu, MessageSquare
@@ -14,13 +15,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const pathname = usePathname();
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { checkAuth(); }, []);
   useEffect(() => { if (!loading && !user) router.push('/login'); }, [user, loading, router]);
-  useEffect(() => { if (user) loadNotifications(); }, [user]);
+  useEffect(() => { if (user) { loadNotifications(); } }, [user]);
+
+  // Poll notifications every 30 seconds
+  useEffect(() => {
+    if (!user) return;
+    const interval = setInterval(loadNotifications, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) setShowNotifications(false);
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) setShowUserMenu(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   const loadNotifications = async () => {
     if (!user) return;
@@ -28,13 +48,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setNotifications(notifs);
   };
 
-  const handleNotificationClick = async (notif: any) => {
-    if (!notif.read) { await markNotificationAsRead(notif.$id); loadNotifications(); }
+  const handleNotificationClick = async (notif: Notification) => {
+    if (!notif.read) {
+      await markNotificationAsRead(notif.$id);
+      await loadNotifications();
+    }
     if (notif.link) router.push(notif.link);
     setShowNotifications(false);
   };
 
   const handleLogout = async () => { await logout(); router.push('/'); };
+
+  const markAllAsRead = async () => {
+    const unread = notifications.filter(n => !n.read);
+    await Promise.all(unread.map(n => markNotificationAsRead(n.$id)));
+    await loadNotifications();
+  };
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -152,7 +181,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             )}
 
             {/* Notifications */}
-            <div className="relative">
+            <div className="relative" ref={notifRef}>
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="relative p-2 text-gray-500 hover:text-primary-600 hover:bg-gray-100 rounded-lg"
@@ -169,9 +198,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <div className="absolute right-0 top-12 w-80 bg-white rounded-xl shadow-xl border z-50">
                   <div className="p-4 border-b flex justify-between items-center">
                     <h3 className="font-semibold">Notifications</h3>
-                    <button onClick={() => setShowNotifications(false)}>
-                      <X className="w-5 h-5 text-gray-400" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {unreadCount > 0 && (
+                        <button onClick={markAllAsRead} className="text-xs text-primary-600 hover:underline">Mark All Read</button>
+                      )}
+                      <button onClick={() => setShowNotifications(false)}>
+                        <X className="w-5 h-5 text-gray-400" />
+                      </button>
+                    </div>
                   </div>
                   <div className="max-h-96 overflow-y-auto">
                     {notifications.length > 0 ? notifications.map(notif => (
@@ -196,7 +230,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
 
             {/* User Menu */}
-            <div className="relative">
+            <div className="relative" ref={userMenuRef}>
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg"
