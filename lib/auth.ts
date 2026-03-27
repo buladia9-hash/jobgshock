@@ -14,9 +14,10 @@ interface AuthState {
 }
 
 function normalizeUser(userData: any): User {
+  const role = userData.role === 'recruiter' ? 'recruiter' : 'employee';
   return {
     ...userData,
-    role: userData.role || 'employee',
+    role,
     skills: userData.skills ? userData.skills.split(',').map((s: string) => s.trim()) : []
   } as User;
 }

@@ -98,6 +98,7 @@ export default function Profile() {
                 <option value="employee">Job Seeker</option>
                 <option value="recruiter">Recruiter</option>
               </select>
+              <p className="text-xs text-gray-500 mt-2">Change this if the account is showing the wrong dashboard. Saving updates the account type immediately.</p>
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Phone</label>
