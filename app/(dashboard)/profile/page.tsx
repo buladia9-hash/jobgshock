@@ -8,7 +8,7 @@ export default function Profile() {
   const { user, updateProfile } = useAuth();
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({
-    name: '', phone: '', location: '', bio: '', company: '', website: '', skills: '', experience: '', education: ''
+    name: '', phone: '', location: '', bio: '', company: '', website: '', skills: '', experience: '', education: '', role: 'employee' as 'employee' | 'recruiter'
   });
   const [loading, setLoading] = useState(false);
 
@@ -16,7 +16,8 @@ export default function Profile() {
     if (user) setFormData({
       name: user.name || '', phone: user.phone || '', location: user.location || '',
       bio: user.bio || '', company: user.company || '', website: user.website || '',
-      skills: user.skills?.join(', ') || '', experience: user.experience || '', education: user.education || ''
+      skills: user.skills?.join(', ') || '', experience: user.experience || '', education: user.education || '',
+      role: user.role || 'employee'
     });
   }, [user]);
 
@@ -28,7 +29,7 @@ export default function Profile() {
         name: formData.name, phone: formData.phone, location: formData.location,
         bio: formData.bio, company: formData.company, website: formData.website,
         skills: formData.skills.split(',').map(s => s.trim()).filter(s => s),
-        experience: formData.experience, education: formData.education
+        experience: formData.experience, education: formData.education, role: formData.role
       });
       toast.success('Profile updated successfully!');
       setEditing(false);
@@ -92,6 +93,13 @@ export default function Profile() {
               <input type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="input" required />
             </div>
             <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Account Type *</label>
+              <select value={formData.role} onChange={(e) => setFormData({...formData, role: e.target.value as 'employee' | 'recruiter'})} className="input">
+                <option value="employee">Job Seeker</option>
+                <option value="recruiter">Recruiter</option>
+              </select>
+            </div>
+            <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Phone</label>
               <input type="tel" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="input" placeholder="+1 234 567 8900" />
             </div>
@@ -103,7 +111,7 @@ export default function Profile() {
               <label className="block text-sm font-semibold text-gray-700 mb-2">Website</label>
               <input type="url" value={formData.website} onChange={(e) => setFormData({...formData, website: e.target.value})} className="input" placeholder="https://yourwebsite.com" />
             </div>
-            {user.role === 'recruiter' && (
+            {formData.role === 'recruiter' && (
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Company</label>
                 <input type="text" value={formData.company} onChange={(e) => setFormData({...formData, company: e.target.value})} className="input" placeholder="Company name" />
@@ -114,7 +122,7 @@ export default function Profile() {
             <label className="block text-sm font-semibold text-gray-700 mb-2">Bio</label>
             <textarea value={formData.bio} onChange={(e) => setFormData({...formData, bio: e.target.value})} className="input" rows={3} placeholder="Tell us about yourself..." />
           </div>
-          {user.role === 'employee' && (
+          {formData.role === 'employee' && (
             <>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Skills <span className="text-gray-400 font-normal">(comma separated)</span></label>
