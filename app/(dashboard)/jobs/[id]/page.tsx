@@ -60,7 +60,14 @@ export default function JobDetail() {
   };
 
   const handleApply = async () => {
-    if (!user) return;
+    if (!user || user.role !== 'employee') {
+      toast.error('Only job seeker accounts can apply to jobs');
+      return;
+    }
+    if (!job || job.status !== 'active') {
+      toast.error('This job is no longer accepting applications');
+      return;
+    }
     setLoading(true);
     try {
       let resumeId = '';
@@ -78,6 +85,10 @@ export default function JobDetail() {
   };
 
   const handleStatusUpdate = async (appId: string, status: Application['status']) => {
+    if (!isOwner) {
+      toast.error('You are not allowed to update this application');
+      return;
+    }
     try {
       await databases.updateDocument(
         process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
@@ -90,7 +101,10 @@ export default function JobDetail() {
   };
 
   const handleToggleStatus = async () => {
-    if (!job) return;
+    if (!job || !isOwner) {
+      toast.error('You are not allowed to update this job');
+      return;
+    }
     setToggling(true);
     try {
       const newStatus = job.status === 'active' ? 'closed' : 'active';
@@ -106,6 +120,10 @@ export default function JobDetail() {
   };
 
   const handleDelete = async () => {
+    if (!isOwner) {
+      toast.error('You are not allowed to delete this job');
+      return;
+    }
     if (!confirm('Are you sure you want to delete this job? This cannot be undone.')) return;
     setDeleting(true);
     try {

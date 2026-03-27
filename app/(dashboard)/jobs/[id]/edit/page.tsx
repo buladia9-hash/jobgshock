@@ -18,7 +18,7 @@ export default function EditJob() {
     description: '', requirements: [''], benefits: [''], skills: ['']
   });
 
-  useEffect(() => { loadJob(); }, [id]);
+  useEffect(() => { if (user) loadJob(); }, [id, user?.$id]);
 
   const loadJob = async () => {
     try {
@@ -27,9 +27,14 @@ export default function EditJob() {
         process.env.NEXT_PUBLIC_APPWRITE_JOBS_COLLECTION_ID!,
         id as string
       );
+      if (!user || user.role !== 'recruiter' || doc.recruiterId !== user.$id) {
+        toast.error('You are not allowed to edit this job');
+        router.replace(`/jobs/${id}`);
+        return;
+      }
       setFormData({
         title: doc.title, company: doc.company, location: doc.location,
-        type: doc.type, salaryMin: doc.salaryMin, salaryMax: doc.salaryMax,
+        type: doc.type, salaryMin: String(doc.salaryMin ?? ''), salaryMax: String(doc.salaryMax ?? ''),
         currency: doc.currency, status: doc.status, description: doc.description,
         requirements: doc.requirements?.split('\n').filter((r: string) => r.trim()) || [''],
         benefits: doc.benefits?.split('\n').filter((b: string) => b.trim()) || [''],
@@ -52,6 +57,18 @@ export default function EditJob() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user || user.role !== 'recruiter') {
+      toast.error('Only recruiter accounts can edit jobs');
+      return;
+    }
+
+    const salaryMin = Number(formData.salaryMin);
+    const salaryMax = Number(formData.salaryMax);
+    if (!Number.isFinite(salaryMin) || !Number.isFinite(salaryMax) || salaryMin < 0 || salaryMax < salaryMin) {
+      toast.error('Enter a valid salary range');
+      return;
+    }
+
     setLoading(true);
     try {
       await databases.updateDocument(
@@ -60,7 +77,7 @@ export default function EditJob() {
         id as string,
         {
           title: formData.title, company: formData.company, location: formData.location,
-          type: formData.type, salaryMin: String(formData.salaryMin), salaryMax: String(formData.salaryMax),
+          type: formData.type, salaryMin, salaryMax,
           currency: formData.currency, status: formData.status, description: formData.description,
           requirements: formData.requirements.filter(r => r.trim()).join('\n'),
           benefits: formData.benefits.filter(b => b.trim()).join('\n'),

@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { databases } from '@/lib/appwrite';
@@ -18,6 +18,13 @@ export default function CreateJob() {
   });
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (user && user.role !== 'recruiter') {
+      toast.error('Only recruiter accounts can post jobs');
+      router.replace('/dashboard');
+    }
+  }, [user, router]);
+
   const addField = (field: 'requirements' | 'benefits' | 'skills') => {
     setFormData({ ...formData, [field]: [...formData[field], ''] });
   };
@@ -35,7 +42,18 @@ export default function CreateJob() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || user.role !== 'recruiter') {
+      toast.error('Only recruiter accounts can post jobs');
+      return;
+    }
+
+    const salaryMin = Number(formData.salaryMin);
+    const salaryMax = Number(formData.salaryMax);
+    if (!Number.isFinite(salaryMin) || !Number.isFinite(salaryMax) || salaryMin < 0 || salaryMax < salaryMin) {
+      toast.error('Enter a valid salary range');
+      return;
+    }
+
     setLoading(true);
     try {
       const jobData = {
@@ -43,8 +61,8 @@ export default function CreateJob() {
         company: formData.company,
         location: formData.location,
         type: formData.type,
-        salaryMin: String(formData.salaryMin),
-        salaryMax: String(formData.salaryMax),
+        salaryMin,
+        salaryMax,
         currency: formData.currency,
         description: formData.description,
         requirements: formData.requirements.filter(r => r.trim()).join('\n'),
@@ -53,7 +71,7 @@ export default function CreateJob() {
         recruiterId: user.$id,
         recruiterName: user.name,
         status: 'active',
-        applicationsCount: '0',
+        applicationsCount: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
