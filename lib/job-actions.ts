@@ -179,13 +179,26 @@ export async function getCurrentUser() {
   
   try {
     const accountData = await account.get();
-    const userDoc = await databases.listDocuments(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-      process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!,
-      [Query.equal('email', accountData.email)]
-    );
-    
-    const userData: any = userDoc.documents[0];
+    let userData: any = null;
+
+    try {
+      userData = await databases.getDocument(
+        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+        process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!,
+        accountData.$id
+      );
+    } catch {}
+
+    if (!userData) {
+      const userDoc = await databases.listDocuments(
+        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+        process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!,
+        [Query.equal('email', accountData.email), Query.limit(1)]
+      );
+      userData = userDoc.documents[0];
+    }
+
+    if (!userData) return null;
     return {
       ...userData,
       skills: userData.skills ? userData.skills.split(',').map((s: string) => s.trim()) : []

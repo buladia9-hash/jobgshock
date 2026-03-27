@@ -2,13 +2,13 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { account, databases } from '@/lib/appwrite';
+import { useAuth } from '@/lib/auth';
 import { createNotification } from '@/lib/notification-actions';
-import { ID } from 'appwrite';
 import toast from 'react-hot-toast';
 import { Briefcase } from 'lucide-react';
 
 function RegisterForm() {
+  const { register } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -26,18 +26,11 @@ function RegisterForm() {
     e.preventDefault();
     setLoading(true);
     try {
-      try { await account.deleteSession('current'); } catch {}
-      await account.create(ID.unique(), email, password, name);
-      await account.createEmailPasswordSession(email, password);
-      const newDoc = await databases.createDocument(
-        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-        process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!,
-        ID.unique(),
-        { email, name, role, skills: '', createdAt: new Date().toISOString() }
-      );
+      await register(email, password, name, role);
+      const newUser = useAuth.getState().user;
 
-      await createNotification(
-        newDoc.$id,
+      if (newUser) await createNotification(
+        newUser.$id,
         'welcome',
         'Welcome to JobPortal! 🎉',
         `Hi ${name}! Your account has been created successfully.`,
@@ -62,6 +55,7 @@ function RegisterForm() {
           </div>
           <h2 className="text-3xl font-bold">Create Account</h2>
           <p className="text-gray-600 mt-2">Join our platform today</p>
+          <p className="text-xs text-gray-500 mt-2">Use a separate browser or incognito window if you need recruiter and job seeker accounts open at the same time.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="card">

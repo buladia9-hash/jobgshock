@@ -2,12 +2,12 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { account, databases } from '@/lib/appwrite';
-import { Query } from 'appwrite';
+import { useAuth } from '@/lib/auth';
 import toast from 'react-hot-toast';
 import { Briefcase } from 'lucide-react';
 
 export default function Login() {
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,7 +17,7 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     try {
-      await account.createEmailPasswordSession(email, password);
+      await login(email, password);
       toast.success('Welcome back!');
       router.push('/dashboard');
     } catch (error: any) {
@@ -37,6 +37,7 @@ export default function Login() {
           </div>
           <h2 className="text-3xl font-bold">Welcome Back</h2>
           <p className="text-gray-600 mt-2">Sign in to your account</p>
+          <p className="text-xs text-gray-500 mt-2">Use a separate browser or incognito window if you need recruiter and job seeker accounts open at the same time.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="card">

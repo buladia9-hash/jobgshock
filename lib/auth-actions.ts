@@ -21,7 +21,7 @@ export async function registerUser(email: string, password: string, name: string
   await databases.createDocument(
     process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
     process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!,
-    ID.unique(),
+    user.$id,
     { email, name, role, skills: '', createdAt: new Date().toISOString() }
   );
   

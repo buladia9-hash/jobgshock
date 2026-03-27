@@ -13,69 +13,86 @@ interface AuthState {
   updateProfile: (data: Partial<User>) => Promise<void>;
 }
 
+function normalizeUser(userData: any): User {
+  return {
+    ...userData,
+    role: userData.role || 'employee',
+    skills: userData.skills ? userData.skills.split(',').map((s: string) => s.trim()) : []
+  } as User;
+}
+
+async function resolveUserDocument(accountData: any) {
+  try {
+    return await databases.getDocument(
+      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+      process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!,
+      accountData.$id
+    );
+  } catch {}
+
+  const userDoc = await databases.listDocuments(
+    process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+    process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!,
+    [Query.equal('email', accountData.email), Query.limit(1)]
+  );
+
+  return userDoc.documents[0] || null;
+}
+
 export const useAuth = create<AuthState>((set) => ({
   user: null,
   loading: true,
 
   login: async (email, password) => {
+    set({ loading: true });
     try {
       await account.deleteSession('current');
     } catch {}
-    await account.createEmailPasswordSession(email, password);
-    const accountData = await account.get();
-    const userDoc = await databases.listDocuments(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-      process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!,
-      [Query.equal('email', email)]
-    );
-    const userData: any = userDoc.documents[0];
-    if (!userData) throw new Error('User account not found');
-    set({ user: {
-      ...userData,
-      role: userData.role || 'employee',
-      skills: userData.skills ? userData.skills.split(',').map((s: string) => s.trim()) : []
-    } as User });
+    try {
+      await account.createEmailPasswordSession(email, password);
+      const accountData = await account.get();
+      const userData: any = await resolveUserDocument(accountData);
+      if (!userData) throw new Error('User account not found');
+      set({ user: normalizeUser(userData), loading: false });
+    } catch (error) {
+      set({ loading: false });
+      throw error;
+    }
   },
 
   register: async (email, password, name, role) => {
+    set({ loading: true });
     try {
       await account.deleteSession('current');
     } catch {}
-    const acc = await account.create(ID.unique(), email, password, name);
-    await account.createEmailPasswordSession(email, password);
-    const userDoc = await databases.createDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-      process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!,
-      ID.unique(),
-      { email, name, role, skills: '', createdAt: new Date().toISOString() }
-    );
-    const userData: any = userDoc;
-    set({ user: {
-      ...userData,
-      skills: []
-    } as User });
+    try {
+      const acc = await account.create(ID.unique(), email, password, name);
+      await account.createEmailPasswordSession(email, password);
+      const userDoc = await databases.createDocument(
+        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+        process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!,
+        acc.$id,
+        { email, name, role, skills: '', createdAt: new Date().toISOString() }
+      );
+      set({ user: normalizeUser(userDoc), loading: false });
+    } catch (error) {
+      set({ loading: false });
+      throw error;
+    }
   },
 
   logout: async () => {
     await account.deleteSession('current');
-    set({ user: null });
+    set({ user: null, loading: false });
   },
 
   checkAuth: async () => {
+    set({ loading: true });
     try {
       const accountData = await account.get();
-      const userDoc = await databases.listDocuments(
-        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-        process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!,
-        [Query.equal('email', accountData.email)]
-      );
-      const userData: any = userDoc.documents[0];
+      const userData: any = await resolveUserDocument(accountData);
       if (!userData) { set({ user: null, loading: false }); return; }
-      set({ user: {
-        ...userData,
-        role: userData.role || 'employee',
-        skills: userData.skills ? userData.skills.split(',').map((s: string) => s.trim()) : []
-      } as User, loading: false });
+      set({ user: normalizeUser(userData), loading: false });
     } catch {
       set({ user: null, loading: false });
     }
@@ -92,10 +109,6 @@ export const useAuth = create<AuthState>((set) => ({
       currentUser.$id,
       updateData
     );
-    const userData: any = updated;
-    set({ user: {
-      ...userData,
-      skills: userData.skills ? userData.skills.split(',').map((s: string) => s.trim()) : []
-    } as User });
+    set({ user: normalizeUser(updated) });
   }
 }));
