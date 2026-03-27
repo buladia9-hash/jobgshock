@@ -77,7 +77,7 @@ export default function EditJob() {
         id as string,
         {
           title: formData.title, company: formData.company, location: formData.location,
-          type: formData.type, salaryMin, salaryMax,
+          type: formData.type, salaryMin: String(salaryMin), salaryMax: String(salaryMax),
           currency: formData.currency, status: formData.status, description: formData.description,
           requirements: formData.requirements.filter(r => r.trim()).join('\n'),
           benefits: formData.benefits.filter(b => b.trim()).join('\n'),

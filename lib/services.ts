@@ -10,8 +10,8 @@ export const jobService = {
       company: data.company,
       location: data.location,
       type: data.type,
-      salaryMin: data.salary.min,
-      salaryMax: data.salary.max,
+      salaryMin: String(data.salary.min),
+      salaryMax: String(data.salary.max),
       currency: data.salary.currency,
       description: data.description,
       requirements: data.requirements.join('\n'),
@@ -20,7 +20,7 @@ export const jobService = {
       recruiterId: data.recruiterId,
       recruiterName: data.recruiterName,
       status: data.status,
-      applicationsCount: 0,
+      applicationsCount: '0',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -106,7 +106,7 @@ export const applicationService = {
       { jobId, employeeId, employeeName, employeeEmail, resumeId, coverLetter, status: 'pending', appliedAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
     );
     const job = await jobService.getJobById(jobId);
-    await jobService.updateJob(jobId, { applicationsCount: job.applicationsCount + 1 });
+    await jobService.updateJob(jobId, { applicationsCount: String(Number(job.applicationsCount) + 1) as any });
     return app;
   },
 

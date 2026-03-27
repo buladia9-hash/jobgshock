@@ -61,8 +61,8 @@ export default function CreateJob() {
         company: formData.company,
         location: formData.location,
         type: formData.type,
-        salaryMin,
-        salaryMax,
+        salaryMin: String(salaryMin),
+        salaryMax: String(salaryMax),
         currency: formData.currency,
         description: formData.description,
         requirements: formData.requirements.filter(r => r.trim()).join('\n'),
@@ -71,7 +71,7 @@ export default function CreateJob() {
         recruiterId: user.$id,
         recruiterName: user.name,
         status: 'active',
-        applicationsCount: 0,
+        applicationsCount: '0',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
