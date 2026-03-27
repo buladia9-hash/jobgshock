@@ -17,29 +17,52 @@ export default function Applications() {
   const loadApplications = async () => {
     if (!user) return;
     try {
-      const appsResult = await databases.listDocuments(
-        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-        process.env.NEXT_PUBLIC_APPWRITE_APPLICATIONS_COLLECTION_ID!,
-        [Query.equal('employeeId', user.$id), Query.orderDesc('appliedAt')]
-      );
-      const appsWithJobs = await Promise.all(
-        appsResult.documents.map(async (app: any) => {
-          let job = null;
-          let resumeUrl = '';
-          try {
-            job = await databases.getDocument(
-              process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-              process.env.NEXT_PUBLIC_APPWRITE_JOBS_COLLECTION_ID!,
-              app.jobId
-            );
-          } catch {}
-          if (app.resumeId) {
-            resumeUrl = `${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.NEXT_PUBLIC_APPWRITE_STORAGE_BUCKET_ID}/files/${app.resumeId}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID}`;
-          }
-          return { ...app, job, resumeUrl };
-        })
-      );
-      setApplications(appsWithJobs);
+      if (user.role === 'recruiter') {
+        // Recruiter: get all jobs first, then their applications
+        const jobsResult = await databases.listDocuments(
+          process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+          process.env.NEXT_PUBLIC_APPWRITE_JOBS_COLLECTION_ID!,
+          [Query.equal('recruiterId', user.$id), Query.orderDesc('createdAt')]
+        );
+        const jobs = jobsResult.documents;
+        if (jobs.length === 0) { setApplications([]); setLoading(false); return; }
+        const jobIds = jobs.map((j: any) => j.$id);
+        const appsResult = await databases.listDocuments(
+          process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+          process.env.NEXT_PUBLIC_APPWRITE_APPLICATIONS_COLLECTION_ID!,
+          [Query.equal('jobId', jobIds), Query.orderDesc('appliedAt')]
+        );
+        const appsWithJobs = appsResult.documents.map((app: any) => ({
+          ...app,
+          job: jobs.find((j: any) => j.$id === app.jobId) || null
+        }));
+        setApplications(appsWithJobs);
+      } else {
+        // Employee: get their own applications
+        const appsResult = await databases.listDocuments(
+          process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+          process.env.NEXT_PUBLIC_APPWRITE_APPLICATIONS_COLLECTION_ID!,
+          [Query.equal('employeeId', user.$id), Query.orderDesc('appliedAt')]
+        );
+        const appsWithJobs = await Promise.all(
+          appsResult.documents.map(async (app: any) => {
+            let job = null;
+            let resumeUrl = '';
+            try {
+              job = await databases.getDocument(
+                process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+                process.env.NEXT_PUBLIC_APPWRITE_JOBS_COLLECTION_ID!,
+                app.jobId
+              );
+            } catch {}
+            if (app.resumeId) {
+              resumeUrl = `${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.NEXT_PUBLIC_APPWRITE_STORAGE_BUCKET_ID}/files/${app.resumeId}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID}`;
+            }
+            return { ...app, job, resumeUrl };
+          })
+        );
+        setApplications(appsWithJobs);
+      }
     } catch (error) { console.error('Failed to load applications:', error); }
     setLoading(false);
   };
@@ -74,16 +97,17 @@ export default function Applications() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">My Applications</h1>
-        <p className="text-gray-500 mt-1">{applications.length} application{applications.length !== 1 ? 's' : ''} submitted</p>
+        <h1 className="text-3xl font-bold text-gray-900">{user?.role === 'recruiter' ? 'All Applications' : 'My Applications'}</h1>
+        <p className="text-gray-500 mt-1">{applications.length} application{applications.length !== 1 ? 's' : ''} {user?.role === 'recruiter' ? 'received' : 'submitted'}</p>
       </div>
 
       {applications.length === 0 ? (
         <div className="bg-white rounded-2xl border shadow-sm text-center py-16">
           <Briefcase className="w-16 h-16 mx-auto mb-4 text-gray-200" />
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">No applications yet</h3>
-          <p className="text-gray-500 mb-6">Start applying to jobs that match your skills</p>
-          <Link href="/jobs" className="btn btn-primary px-8">Browse Jobs</Link>
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">{user?.role === 'recruiter' ? 'No applications yet' : 'No applications yet'}</h3>
+          <p className="text-gray-500 mb-6">{user?.role === 'recruiter' ? 'Applications will appear here when job seekers apply' : 'Start applying to jobs that match your skills'}</p>
+          {user?.role === 'employee' && <Link href="/jobs" className="btn btn-primary px-8">Browse Jobs</Link>}
+          {user?.role === 'recruiter' && <Link href="/jobs/create" className="btn btn-primary px-8">Post a Job</Link>}
         </div>
       ) : (
         <div className="space-y-4">
@@ -94,23 +118,37 @@ export default function Applications() {
                 <div className="flex justify-between items-start gap-4">
                   <div className="flex items-start gap-4 flex-1 min-w-0">
                     <div className="w-12 h-12 bg-gradient-to-br from-primary-600 to-primary-800 rounded-xl flex items-center justify-center text-white font-bold flex-shrink-0">
-                      {app.job?.company?.charAt(0)?.toUpperCase() || 'J'}
+                      {user?.role === 'recruiter' ? app.employeeName?.charAt(0)?.toUpperCase() : app.job?.company?.charAt(0)?.toUpperCase() || 'J'}
                     </div>
                     <div className="flex-1 min-w-0">
-                      {app.job ? (
+                      {user?.role === 'recruiter' ? (
                         <>
-                          <Link href={`/jobs/${app.jobId}`} className="text-lg font-bold text-gray-900 hover:text-primary-600 transition-colors">
-                            {app.job.title}
-                          </Link>
-                          <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
-                            <span className="font-medium text-gray-700">{app.job.company}</span>
-                            {app.job.location && (
-                              <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{app.job.location}</span>
-                            )}
-                          </div>
+                          <p className="text-lg font-bold text-gray-900">{app.employeeName}</p>
+                          <p className="text-sm text-gray-500">{app.employeeEmail}</p>
+                          {app.job && (
+                            <Link href={`/jobs/${app.jobId}`} className="text-sm text-primary-600 hover:underline mt-1 inline-block">
+                              Applied for: {app.job.title}
+                            </Link>
+                          )}
                         </>
                       ) : (
-                        <h3 className="text-lg font-bold text-gray-900">Job Application</h3>
+                        <>
+                          {app.job ? (
+                            <>
+                              <Link href={`/jobs/${app.jobId}`} className="text-lg font-bold text-gray-900 hover:text-primary-600 transition-colors">
+                                {app.job.title}
+                              </Link>
+                              <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
+                                <span className="font-medium text-gray-700">{app.job.company}</span>
+                                {app.job.location && (
+                                  <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{app.job.location}</span>
+                                )}
+                              </div>
+                            </>
+                          ) : (
+                            <h3 className="text-lg font-bold text-gray-900">Job Application</h3>
+                          )}
+                        </>
                       )}
                       <div className="flex items-center gap-2 mt-2 text-xs text-gray-400">
                         <Clock className="w-3 h-3" />
@@ -132,12 +170,18 @@ export default function Applications() {
                           <ExternalLink className="w-3 h-3" /> View Resume
                         </a>
                       )}
-                      {app.job?.recruiterId && (
-                        <Link href={`/messages?to=${app.job.recruiterId}&name=${encodeURIComponent(app.job.recruiterName || 'Recruiter')}`} className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium">
-                          <MessageSquare className="w-3 h-3" /> Message Recruiter
+                      {user?.role === 'recruiter' ? (
+                        <Link href={`/messages?to=${app.employeeId}&name=${encodeURIComponent(app.employeeName)}`} className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium">
+                          <MessageSquare className="w-3 h-3" /> Message
                         </Link>
+                      ) : (
+                        app.job?.recruiterId && (
+                          <Link href={`/messages?to=${app.job.recruiterId}&name=${encodeURIComponent(app.job.recruiterName || 'Recruiter')}`} className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium">
+                            <MessageSquare className="w-3 h-3" /> Message Recruiter
+                          </Link>
+                        )
                       )}
-                      {app.status === 'pending' && (
+                      {app.status === 'pending' && user?.role === 'employee' && (
                         <button onClick={() => handleWithdraw(app.$id)} className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 font-medium">
                           <X className="w-3 h-3" /> Withdraw
                         </button>
