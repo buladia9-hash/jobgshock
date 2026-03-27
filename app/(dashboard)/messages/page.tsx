@@ -6,6 +6,7 @@ import { databases } from '@/lib/appwrite';
 import { ID, Query } from 'appwrite';
 import { Send, MessageSquare } from 'lucide-react';
 import { Suspense } from 'react';
+import toast from 'react-hot-toast';
 
 function MessagesContent() {
   const { user } = useAuth();
@@ -16,6 +17,7 @@ function MessagesContent() {
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const userNameCache = useRef<Map<string, string>>(new Map());
 
   const toId = searchParams.get('to');
   const toName = searchParams.get('name');
@@ -25,11 +27,16 @@ function MessagesContent() {
   }, [user]);
 
   useEffect(() => {
-    if (toId && toName && user) {
-      const convo = { userId: toId, userName: toName };
+    if (!toId || !user) return;
+
+    const openConversation = async () => {
+      const resolvedName = toName || await getUserName(toId);
+      const convo = { userId: toId, userName: resolvedName };
       setActiveConvo(convo);
       loadMessages(toId);
-    }
+    };
+
+    openConversation();
   }, [toId, toName, user?.$id]);
 
   useEffect(() => {
@@ -42,6 +49,39 @@ function MessagesContent() {
     const interval = setInterval(() => loadMessages(activeConvo.userId), 3000);
     return () => clearInterval(interval);
   }, [activeConvo]);
+
+  const getUserName = async (userId: string) => {
+    const cached = userNameCache.current.get(userId);
+    if (cached) return cached;
+
+    try {
+      const userDoc: any = await databases.getDocument(
+        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+        process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!,
+        userId
+      );
+      const name = userDoc.name || 'Unknown User';
+      userNameCache.current.set(userId, name);
+      return name;
+    } catch {
+      return 'Unknown User';
+    }
+  };
+
+  const enrichConversations = async (items: any[]) => {
+    const missingIds = items
+      .filter((item) => !item.userName)
+      .map((item) => item.userId);
+
+    if (missingIds.length > 0) {
+      await Promise.all(missingIds.map((id) => getUserName(id)));
+    }
+
+    return items.map((item) => ({
+      ...item,
+      userName: item.userName || userNameCache.current.get(item.userId) || 'Unknown User'
+    }));
+  };
 
   const loadConversations = async () => {
     if (!user) return;
@@ -66,7 +106,8 @@ function MessagesContent() {
           convoMap.set(otherId, { userId: otherId, userName: otherName, lastMessage: msg.content, lastTime: msg.createdAt });
         }
       });
-      setConversations(Array.from(convoMap.values()).sort((a, b) => new Date(b.lastTime).getTime() - new Date(a.lastTime).getTime()));
+      const convoList = await enrichConversations(Array.from(convoMap.values()));
+      setConversations(convoList.sort((a, b) => new Date(b.lastTime).getTime() - new Date(a.lastTime).getTime()));
     } catch (error) {
       console.error('Failed to load conversations:', error);
     }
@@ -114,9 +155,7 @@ function MessagesContent() {
         ID.unique(),
         {
           senderId: user.$id,
-          senderName: user.name,
           receiverId: activeConvo.userId,
-          receiverName: activeConvo.userName,
           content: newMessage.trim(),
           read: false,
           createdAt: new Date().toISOString()
@@ -127,6 +166,7 @@ function MessagesContent() {
       loadConversations();
     } catch (error: any) {
       console.error('Failed to send message:', error);
+      toast.error(error?.message || 'Failed to send message');
     } finally {
       setSending(false);
     }
