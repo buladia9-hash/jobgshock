@@ -5,13 +5,13 @@ import { databases } from '@/lib/appwrite';
 import { Query } from 'appwrite';
 import Link from 'next/link';
 import {
-  Briefcase, Users, PlusCircle, Eye, CheckCircle,
+  Briefcase, Users, PlusCircle, CheckCircle,
   ArrowRight, BarChart2, Star, FileText, Search
 } from 'lucide-react';
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const [stats, setStats] = useState({ jobs: 0, applications: 0, active: 0, views: 0 });
+  const [stats, setStats] = useState({ jobs: 0, applications: 0, active: 0, closed: 0 });
   const [recentJobs, setRecentJobs] = useState<any[]>([]);
   const [recentApplications, setRecentApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,7 +48,7 @@ export default function Dashboard() {
       jobs: jobs.length,
       applications: totalApps,
       active: jobs.filter((j: any) => j.status === 'active').length,
-      views: totalApps * 5
+      closed: jobs.filter((j: any) => j.status === 'closed').length
     });
 
     if (jobs.length > 0) {
@@ -80,7 +80,7 @@ export default function Dashboard() {
       jobs: jobsResult.total,
       applications: appsResult.total,
       active: appsResult.documents.filter((a: any) => a.status === 'pending').length,
-      views: 0
+      closed: 0
     });
   };
 
@@ -124,7 +124,7 @@ export default function Dashboard() {
             <StatCard icon={<Briefcase className="w-6 h-6 text-blue-600" />} bg="bg-blue-100" value={stats.jobs} label="Jobs Posted" />
             <StatCard icon={<Users className="w-6 h-6 text-purple-600" />} bg="bg-purple-100" value={stats.applications} label="Total Applications" />
             <StatCard icon={<CheckCircle className="w-6 h-6 text-green-600" />} bg="bg-green-100" value={stats.active} label="Active Listings" />
-            <StatCard icon={<Eye className="w-6 h-6 text-orange-600" />} bg="bg-orange-100" value={stats.views} label="Total Views" />
+            <StatCard icon={<FileText className="w-6 h-6 text-orange-600" />} bg="bg-orange-100" value={stats.closed} label="Closed Listings" />
           </>
         ) : (
           <>

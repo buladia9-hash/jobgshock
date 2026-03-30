@@ -13,12 +13,42 @@ interface AuthState {
   updateProfile: (data: Partial<User>) => Promise<void>;
 }
 
-function normalizeUser(userData: any): User {
-  const role = userData.role === 'recruiter' ? 'recruiter' : 'employee';
+const AUTH_STORAGE_KEY = 'job-portal-auth-user';
+
+function getCachedUser(): User | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(AUTH_STORAGE_KEY);
+    return raw ? JSON.parse(raw) as User : null;
+  } catch {
+    return null;
+  }
+}
+
+function setCachedUser(user: User | null) {
+  if (typeof window === 'undefined') return;
+  if (!user) {
+    window.localStorage.removeItem(AUTH_STORAGE_KEY);
+    return;
+  }
+  window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
+}
+
+function normalizeUser(userData: any, fallbackUser?: User | null): User {
+  const role =
+    userData?.role === 'recruiter' || userData?.role === 'employee'
+      ? userData.role
+      : fallbackUser?.role || 'employee';
+  const skills = Array.isArray(userData?.skills)
+    ? userData.skills
+    : typeof userData?.skills === 'string'
+      ? userData.skills.split(',').map((s: string) => s.trim()).filter(Boolean)
+      : fallbackUser?.skills || [];
   return {
+    ...fallbackUser,
     ...userData,
     role,
-    skills: userData.skills ? userData.skills.split(',').map((s: string) => s.trim()) : []
+    skills
   } as User;
 }
 
@@ -34,14 +64,19 @@ async function resolveUserDocument(accountData: any) {
   const userDoc = await databases.listDocuments(
     process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
     process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!,
-    [Query.equal('email', accountData.email), Query.limit(1)]
+    [Query.equal('email', accountData.email), Query.limit(10)]
   );
 
-  return userDoc.documents[0] || null;
+  return (
+    userDoc.documents.find((doc: any) => doc.$id === accountData.$id) ||
+    userDoc.documents.find((doc: any) => doc.role === 'recruiter' || doc.role === 'employee') ||
+    userDoc.documents[0] ||
+    null
+  );
 }
 
 export const useAuth = create<AuthState>((set) => ({
-  user: null,
+  user: getCachedUser(),
   loading: true,
 
   login: async (email, password) => {
@@ -54,7 +89,9 @@ export const useAuth = create<AuthState>((set) => ({
       const accountData = await account.get();
       const userData: any = await resolveUserDocument(accountData);
       if (!userData) throw new Error('User account not found');
-      set({ user: normalizeUser(userData), loading: false });
+      const normalizedUser = normalizeUser(userData, useAuth.getState().user);
+      setCachedUser(normalizedUser);
+      set({ user: normalizedUser, loading: false });
     } catch (error) {
       set({ loading: false });
       throw error;
@@ -75,7 +112,9 @@ export const useAuth = create<AuthState>((set) => ({
         acc.$id,
         { email, name, role, skills: '', createdAt: new Date().toISOString() }
       );
-      set({ user: normalizeUser(userDoc), loading: false });
+      const normalizedUser = normalizeUser(userDoc);
+      setCachedUser(normalizedUser);
+      set({ user: normalizedUser, loading: false });
     } catch (error) {
       set({ loading: false });
       throw error;
@@ -84,6 +123,7 @@ export const useAuth = create<AuthState>((set) => ({
 
   logout: async () => {
     await account.deleteSession('current');
+    setCachedUser(null);
     set({ user: null, loading: false });
   },
 
@@ -92,9 +132,17 @@ export const useAuth = create<AuthState>((set) => ({
     try {
       const accountData = await account.get();
       const userData: any = await resolveUserDocument(accountData);
-      if (!userData) { set({ user: null, loading: false }); return; }
-      set({ user: normalizeUser(userData), loading: false });
+      if (!userData) {
+        setCachedUser(null);
+        set({ user: null, loading: false });
+        return;
+      }
+      const fallbackUser = useAuth.getState().user || getCachedUser();
+      const normalizedUser = normalizeUser(userData, fallbackUser);
+      setCachedUser(normalizedUser);
+      set({ user: normalizedUser, loading: false });
     } catch {
+      setCachedUser(null);
       set({ user: null, loading: false });
     }
   },
@@ -110,6 +158,8 @@ export const useAuth = create<AuthState>((set) => ({
       currentUser.$id,
       updateData
     );
-    set({ user: normalizeUser(updated) });
+    const normalizedUser = normalizeUser(updated, currentUser);
+    setCachedUser(normalizedUser);
+    set({ user: normalizedUser });
   }
 }));
