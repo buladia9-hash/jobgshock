@@ -13,7 +13,6 @@ import {
   ArrowRight,
   DollarSign,
   Mail,
-  Phone,
 } from 'lucide-react';
 import { databases } from '@/lib/appwrite';
 import { Query } from 'appwrite';
@@ -359,14 +358,8 @@ export default function Home() {
               <div className="space-y-3 text-sm text-gray-300">
                 <div className="flex items-center gap-3">
                   <Mail className="w-4 h-4 text-primary-400" />
-                  <a href="mailto:support@jobportal.com" className="hover:text-white transition-colors">
-                    support@jobportal.com
-                  </a>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Phone className="w-4 h-4 text-primary-400" />
-                  <a href="tel:08051243425" className="hover:text-white transition-colors">
-                    08051243425
+                  <a href="mailto:adeshinasegun82@gmail.com" className="hover:text-white transition-colors">
+                    adeshinasegun82@gmail.com
                   </a>
                 </div>
                 <div className="flex items-center gap-3">
