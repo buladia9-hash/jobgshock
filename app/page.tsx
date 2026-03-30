@@ -153,8 +153,8 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-12">
             <div>
-              <h2 className="text-4xl font-bold mb-2">Featured Opportunities</h2>
-              <p className="text-xl text-gray-600">Recent openings from active employers on the platform</p>
+              <h2 className="text-4xl font-bold mb-2">Available Jobs</h2>
+              <p className="text-xl text-gray-600">Current openings from active employers on the platform</p>
             </div>
             <Link href="/jobs" className="btn btn-primary">View All Jobs</Link>
           </div>
