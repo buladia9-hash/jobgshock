@@ -339,11 +339,15 @@ export default function Home() {
               <div className="space-y-3 text-sm text-gray-300">
                 <div className="flex items-center gap-3">
                   <Mail className="w-4 h-4 text-primary-400" />
-                  <span>support@jobportal.com</span>
+                  <a href="mailto:support@jobportal.com" className="hover:text-white transition-colors">
+                    support@jobportal.com
+                  </a>
                 </div>
                 <div className="flex items-center gap-3">
                   <Phone className="w-4 h-4 text-primary-400" />
-                  <span>+234 800 000 0000</span>
+                  <a href="tel:08051243425" className="hover:text-white transition-colors">
+                    08051243425
+                  </a>
                 </div>
                 <div className="flex items-center gap-3">
                   <MapPin className="w-4 h-4 text-primary-400" />
@@ -375,10 +379,10 @@ export default function Home() {
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-gray-400 mb-4">Company</h3>
               <div className="space-y-3">
-                <Link href="/" className="block text-gray-300 hover:text-white transition-colors">About Us</Link>
-                <Link href="/" className="block text-gray-300 hover:text-white transition-colors">Privacy Policy</Link>
-                <Link href="/" className="block text-gray-300 hover:text-white transition-colors">Terms of Service</Link>
-                <Link href="/" className="block text-gray-300 hover:text-white transition-colors">Contact Support</Link>
+                <Link href="/about" className="block text-gray-300 hover:text-white transition-colors">About Us</Link>
+                <Link href="/privacy" className="block text-gray-300 hover:text-white transition-colors">Privacy Policy</Link>
+                <Link href="/terms" className="block text-gray-300 hover:text-white transition-colors">Terms of Service</Link>
+                <Link href="/contact" className="block text-gray-300 hover:text-white transition-colors">Contact Support</Link>
               </div>
             </div>
           </div>
