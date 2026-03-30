@@ -51,7 +51,7 @@ export default function JobDetail() {
         const urls: Record<string, string> = {};
         for (const app of apps) {
           if (app.resumeId) {
-            urls[app.$id] = `${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.NEXT_PUBLIC_APPWRITE_STORAGE_BUCKET_ID}/files/${app.resumeId}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID}`;
+            urls[app.$id] = `/api/resume?fileId=${encodeURIComponent(app.resumeId)}`;
           }
         }
         setResumeUrls(urls);

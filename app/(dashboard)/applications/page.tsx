@@ -56,7 +56,7 @@ export default function Applications() {
               );
             } catch {}
             if (app.resumeId) {
-              resumeUrl = `${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.NEXT_PUBLIC_APPWRITE_STORAGE_BUCKET_ID}/files/${app.resumeId}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID}`;
+              resumeUrl = `/api/resume?fileId=${encodeURIComponent(app.resumeId)}`;
             }
             return { ...app, job, resumeUrl };
           })
