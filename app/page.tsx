@@ -18,6 +18,12 @@ import {
 import { databases } from '@/lib/appwrite';
 import { Query } from 'appwrite';
 
+const trustStats = [
+  { value: '10k+', label: 'candidate profiles reviewed by employers' },
+  { value: '2k+', label: 'active openings across growing businesses' },
+  { value: '48h', label: 'average time to first applicant activity' },
+];
+
 export default function Home() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
@@ -69,13 +75,17 @@ export default function Home() {
         <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:32px_32px]"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h1 className="text-6xl font-bold mb-6 leading-tight">
-              Find Your Dream Job
+            <p className="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium text-primary-50 backdrop-blur-sm mb-6">
+              Professional hiring tools for employers and career-focused talent
+            </p>
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
+              Hire with confidence.
               <br />
-              Start Your Career Today
+              Advance your career with clarity.
             </h1>
-            <p className="text-xl text-primary-100 max-w-2xl mx-auto">
-              Discover thousands of opportunities from top companies worldwide
+            <p className="text-xl text-primary-100 max-w-3xl mx-auto leading-8">
+              JobPortal creates a more structured environment for employers to attract qualified candidates
+              and for professionals to discover credible opportunities.
             </p>
           </div>
 
@@ -107,7 +117,7 @@ export default function Home() {
                 </button>
               </div>
               <div className="flex flex-wrap gap-2 mt-4">
-                <span className="text-sm text-gray-600">Popular:</span>
+                <span className="text-sm text-gray-600">Popular searches:</span>
                 <button onClick={() => { setSearchQuery('Developer'); handleSearch(); }} className="text-sm px-3 py-1 bg-primary-50 text-primary-700 rounded-full hover:bg-primary-100">Developer</button>
                 <button onClick={() => { setSearchQuery('Designer'); handleSearch(); }} className="text-sm px-3 py-1 bg-primary-50 text-primary-700 rounded-full hover:bg-primary-100">Designer</button>
                 <button onClick={() => { setSearchQuery('Manager'); handleSearch(); }} className="text-sm px-3 py-1 bg-primary-50 text-primary-700 rounded-full hover:bg-primary-100">Manager</button>
@@ -120,12 +130,21 @@ export default function Home() {
           <div className="flex flex-wrap gap-4 justify-center">
             <Link href="/register?role=employee" className="btn bg-white text-primary-600 hover:bg-gray-100 px-6 py-3 font-semibold flex items-center gap-2">
               <Users className="w-5 h-5" />
-              I'm Looking for a Job
+              Candidate Access
             </Link>
             <Link href="/register?role=recruiter" className="btn bg-primary-800 hover:bg-primary-900 px-6 py-3 font-semibold flex items-center gap-2">
               <Building2 className="w-5 h-5" />
-              I'm Hiring Talent
+              Employer Access
             </Link>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-4 mt-12">
+            {trustStats.map((item) => (
+              <div key={item.label} className="rounded-2xl border border-white/15 bg-white/10 px-6 py-5 text-left backdrop-blur-sm">
+                <p className="text-3xl font-bold text-white">{item.value}</p>
+                <p className="text-sm text-primary-100 mt-2 leading-6">{item.label}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -134,8 +153,8 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-12">
             <div>
-              <h2 className="text-4xl font-bold mb-2">Latest Job Openings</h2>
-              <p className="text-xl text-gray-600">Fresh opportunities posted recently</p>
+              <h2 className="text-4xl font-bold mb-2">Featured Opportunities</h2>
+              <p className="text-xl text-gray-600">Recent openings from active employers on the platform</p>
             </div>
             <Link href="/jobs" className="btn btn-primary">View All Jobs</Link>
           </div>
@@ -182,30 +201,30 @@ export default function Home() {
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">Why Choose JobPortal?</h2>
-            <p className="text-xl text-gray-600">Everything you need to find your perfect job or hire top talent</p>
+            <h2 className="text-4xl font-bold mb-4">A more professional hiring experience</h2>
+            <p className="text-xl text-gray-600">Built to support stronger candidate discovery, cleaner workflows, and better hiring decisions</p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="card text-center hover:shadow-lg transition-shadow">
               <div className="w-16 h-16 bg-primary-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <Search className="w-8 h-8 text-primary-600" />
               </div>
-              <h3 className="text-2xl font-semibold mb-3">Smart Job Search</h3>
-              <p className="text-gray-600">Advanced filters and AI-powered recommendations to find the perfect match for your skills</p>
+              <h3 className="text-2xl font-semibold mb-3">Focused discovery</h3>
+              <p className="text-gray-600">Candidates can move from search to application with less friction and clearer intent.</p>
             </div>
             <div className="card text-center hover:shadow-lg transition-shadow">
               <div className="w-16 h-16 bg-secondary-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <Users className="w-8 h-8 text-secondary-600" />
               </div>
-              <h3 className="text-2xl font-semibold mb-3">Top Talent Pool</h3>
-              <p className="text-gray-600">Connect with qualified professionals from diverse backgrounds and industries</p>
+              <h3 className="text-2xl font-semibold mb-3">Structured evaluation</h3>
+              <p className="text-gray-600">Recruiters get a cleaner way to review applicants, manage responses, and stay organized.</p>
             </div>
             <div className="card text-center hover:shadow-lg transition-shadow">
               <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <TrendingUp className="w-8 h-8 text-blue-600" />
               </div>
-              <h3 className="text-2xl font-semibold mb-3">Career Growth</h3>
-              <p className="text-gray-600">Access opportunities for advancement and professional development</p>
+              <h3 className="text-2xl font-semibold mb-3">Operational momentum</h3>
+              <p className="text-gray-600">Every part of the workflow is designed to reduce delays and improve follow-through.</p>
             </div>
           </div>
         </div>
@@ -227,16 +246,16 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-4xl font-bold mb-6">For Job Seekers</h2>
-              <p className="text-xl text-gray-600 mb-8">Take control of your career journey with powerful tools and resources</p>
+              <h2 className="text-4xl font-bold mb-6">For professionals seeking the right next move</h2>
+              <p className="text-xl text-gray-600 mb-8">Present your experience clearly, apply efficiently, and stay informed throughout the hiring process.</p>
               <ul className="space-y-4 mb-8">
                 <li className="flex items-start gap-3">
                   <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                     <ArrowRight className="w-4 h-4 text-green-600" />
                   </div>
                   <div>
-                    <h4 className="font-semibold mb-1">Easy Application Process</h4>
-                    <p className="text-gray-600">Apply to multiple jobs with one click</p>
+                    <h4 className="font-semibold mb-1">Clear application flow</h4>
+                    <p className="text-gray-600">Move from discovery to application with a more direct and structured process.</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
@@ -244,8 +263,8 @@ export default function Home() {
                     <ArrowRight className="w-4 h-4 text-green-600" />
                   </div>
                   <div>
-                    <h4 className="font-semibold mb-1">Track Applications</h4>
-                    <p className="text-gray-600">Monitor your application status in real-time</p>
+                    <h4 className="font-semibold mb-1">Status transparency</h4>
+                    <p className="text-gray-600">Monitor progress and stay aligned with employer activity after you apply.</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
@@ -253,12 +272,12 @@ export default function Home() {
                     <ArrowRight className="w-4 h-4 text-green-600" />
                   </div>
                   <div>
-                    <h4 className="font-semibold mb-1">Professional Profile</h4>
-                    <p className="text-gray-600">Showcase your skills and experience</p>
+                    <h4 className="font-semibold mb-1">Professional presentation</h4>
+                    <p className="text-gray-600">Showcase your profile, experience, and resume in a more credible format.</p>
                   </div>
                 </li>
               </ul>
-              <Link href="/register?role=employee" className="btn btn-primary px-8 py-3 font-semibold">Start Your Job Search</Link>
+              <Link href="/register?role=employee" className="btn btn-primary px-8 py-3 font-semibold">Create Candidate Account</Link>
             </div>
             <div className="relative">
               <div className="rounded-3xl overflow-hidden shadow-2xl">
@@ -269,8 +288,8 @@ export default function Home() {
                 />
               </div>
               <div className="absolute -bottom-6 -right-6 bg-white rounded-2xl shadow-xl p-6">
-                <h3 className="text-2xl font-bold mb-2">1000+ Jobs</h3>
-                <p className="text-gray-600">Posted this week</p>
+                <h3 className="text-2xl font-bold mb-2">Reliable visibility</h3>
+                <p className="text-gray-600">Designed for serious job search activity</p>
               </div>
             </div>
           </div>
@@ -282,20 +301,20 @@ export default function Home() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="bg-gradient-to-br from-secondary-50 to-secondary-100 rounded-3xl p-12 text-center order-2 md:order-1">
               <Building2 className="w-24 h-24 text-secondary-600 mx-auto mb-6" />
-              <h3 className="text-3xl font-bold mb-4">500+ Companies</h3>
-              <p className="text-xl text-gray-600">Hiring on our platform</p>
+              <h3 className="text-3xl font-bold mb-4">Employer-ready workflow</h3>
+              <p className="text-xl text-gray-600">Built for teams hiring with structure, speed, and accountability</p>
             </div>
             <div className="order-1 md:order-2">
-              <h2 className="text-4xl font-bold mb-6">For Recruiters</h2>
-              <p className="text-xl text-gray-600 mb-8">Find the perfect candidates faster with our advanced hiring tools</p>
+              <h2 className="text-4xl font-bold mb-6">For employers building stronger teams</h2>
+              <p className="text-xl text-gray-600 mb-8">Publish roles, review applicants, and manage communication through a cleaner hiring workflow.</p>
               <ul className="space-y-4 mb-8">
                 <li className="flex items-start gap-3">
                   <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                     <ArrowRight className="w-4 h-4 text-blue-600" />
                   </div>
                   <div>
-                    <h4 className="font-semibold mb-1">Post Jobs Instantly</h4>
-                    <p className="text-gray-600">Create and publish job listings in minutes</p>
+                    <h4 className="font-semibold mb-1">Faster publishing</h4>
+                    <p className="text-gray-600">Launch openings quickly and keep active roles visible to qualified talent.</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
@@ -303,8 +322,8 @@ export default function Home() {
                     <ArrowRight className="w-4 h-4 text-blue-600" />
                   </div>
                   <div>
-                    <h4 className="font-semibold mb-1">Manage Applications</h4>
-                    <p className="text-gray-600">Review and organize candidates efficiently</p>
+                    <h4 className="font-semibold mb-1">Organized review process</h4>
+                    <p className="text-gray-600">Track applications, shortlist strong candidates, and maintain clearer decision records.</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
@@ -312,12 +331,12 @@ export default function Home() {
                     <ArrowRight className="w-4 h-4 text-blue-600" />
                   </div>
                   <div>
-                    <h4 className="font-semibold mb-1">Analytics Dashboard</h4>
-                    <p className="text-gray-600">Track hiring metrics and performance</p>
+                    <h4 className="font-semibold mb-1">Practical oversight</h4>
+                    <p className="text-gray-600">Monitor hiring activity and keep the process moving without unnecessary friction.</p>
                   </div>
                 </li>
               </ul>
-              <Link href="/register?role=recruiter" className="btn btn-primary px-8 py-3 font-semibold">Start Hiring Today</Link>
+              <Link href="/register?role=recruiter" className="btn btn-primary px-8 py-3 font-semibold">Create Employer Account</Link>
             </div>
           </div>
         </div>
@@ -334,7 +353,8 @@ export default function Home() {
                 <span className="text-2xl font-bold">JobPortal</span>
               </div>
               <p className="text-gray-300 max-w-md leading-7 mb-6">
-                A faster way for job seekers to discover real opportunities and for recruiters to find qualified talent without the usual hiring friction.
+                JobPortal provides a structured environment for employers and candidates to connect, evaluate opportunities,
+                and move hiring decisions forward with confidence.
               </p>
               <div className="space-y-3 text-sm text-gray-300">
                 <div className="flex items-center gap-3">
@@ -357,7 +377,7 @@ export default function Home() {
             </div>
 
             <div>
-              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-gray-400 mb-4">Explore</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-gray-400 mb-4">Platform</h3>
               <div className="space-y-3">
                 <Link href="/jobs" className="block text-gray-300 hover:text-white transition-colors">Browse Jobs</Link>
                 <Link href="/login" className="block text-gray-300 hover:text-white transition-colors">Sign In</Link>
@@ -367,7 +387,7 @@ export default function Home() {
             </div>
 
             <div>
-              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-gray-400 mb-4">For Users</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-gray-400 mb-4">Solutions</h3>
               <div className="space-y-3">
                 <Link href="/register?role=employee" className="block text-gray-300 hover:text-white transition-colors">Job Seekers</Link>
                 <Link href="/register?role=recruiter" className="block text-gray-300 hover:text-white transition-colors">Recruiters</Link>
@@ -390,7 +410,7 @@ export default function Home() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row gap-3 md:items-center md:justify-between text-sm text-gray-400">
           <p>Copyright {currentYear} JobPortal. All rights reserved.</p>
-          <p>Built for modern hiring teams and ambitious job seekers.</p>
+          <p>Professional hiring tools for employers and career-focused talent.</p>
         </div>
       </footer>
     </div>
