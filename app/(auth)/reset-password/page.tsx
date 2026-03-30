@@ -35,7 +35,7 @@ export default function ResetPasswordPage() {
 
     setLoading(true);
     try {
-      await account.updateRecovery(userId, secret, password, confirmPassword);
+      await account.updateRecovery(userId, secret, password);
       setCompleted(true);
       toast.success('Password updated successfully');
       setTimeout(() => router.push('/login'), 1200);
