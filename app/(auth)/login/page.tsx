@@ -10,6 +10,7 @@ export default function Login() {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -52,7 +53,22 @@ export default function Login() {
                 Forgot password?
               </Link>
             </div>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="input" required />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="input pr-16"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((value) => !value)}
+                className="absolute inset-y-0 right-3 my-auto text-sm font-medium text-gray-500 hover:text-primary-600"
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
           </div>
           <button type="submit" disabled={loading} className="btn btn-primary w-full">
             {loading ? 'Signing in...' : 'Sign In'}
