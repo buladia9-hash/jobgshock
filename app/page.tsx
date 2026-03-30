@@ -2,7 +2,19 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Briefcase, Users, TrendingUp, Search, MapPin, Building2, Clock, ArrowRight, DollarSign } from 'lucide-react';
+import {
+  Briefcase,
+  Users,
+  TrendingUp,
+  Search,
+  MapPin,
+  Building2,
+  Clock,
+  ArrowRight,
+  DollarSign,
+  Mail,
+  Phone,
+} from 'lucide-react';
 import { databases } from '@/lib/appwrite';
 import { Query } from 'appwrite';
 
@@ -11,6 +23,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [location, setLocation] = useState('');
   const [latestJobs, setLatestJobs] = useState<any[]>([]);
+  const currentYear = new Date().getFullYear();
 
   useEffect(() => {
     loadLatestJobs();
@@ -41,7 +54,9 @@ export default function Home() {
             <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-primary-800 rounded-lg flex items-center justify-center">
               <Briefcase className="w-6 h-6 text-white" />
             </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent">JobPortal</span>
+            <span className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent">
+              JobPortal
+            </span>
           </div>
           <div className="flex gap-3">
             <Link href="/login" className="btn btn-secondary">Sign In</Link>
@@ -54,34 +69,42 @@ export default function Home() {
         <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:32px_32px]"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h1 className="text-6xl font-bold mb-6 leading-tight">Find Your Dream Job<br/>Start Your Career Today</h1>
-            <p className="text-xl text-primary-100 max-w-2xl mx-auto">Discover thousands of opportunities from top companies worldwide</p>
+            <h1 className="text-6xl font-bold mb-6 leading-tight">
+              Find Your Dream Job
+              <br />
+              Start Your Career Today
+            </h1>
+            <p className="text-xl text-primary-100 max-w-2xl mx-auto">
+              Discover thousands of opportunities from top companies worldwide
+            </p>
           </div>
-          
+
           <div className="max-w-4xl mx-auto mb-12">
             <div className="bg-white rounded-2xl p-3 shadow-2xl">
               <div className="flex flex-col md:flex-row gap-3">
                 <div className="flex-1 relative">
                   <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input 
-                    type="text" 
-                    placeholder="Job title, keywords, or company" 
+                  <input
+                    type="text"
+                    placeholder="Job title, keywords, or company"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 rounded-xl border-0 focus:ring-2 focus:ring-primary-500 outline-none text-gray-900" 
+                    className="w-full pl-12 pr-4 py-4 rounded-xl border-0 focus:ring-2 focus:ring-primary-500 outline-none text-gray-900"
                   />
                 </div>
                 <div className="md:w-64 relative">
                   <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input 
-                    type="text" 
-                    placeholder="Location" 
+                  <input
+                    type="text"
+                    placeholder="Location"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 rounded-xl border-0 focus:ring-2 focus:ring-primary-500 outline-none text-gray-900" 
+                    className="w-full pl-12 pr-4 py-4 rounded-xl border-0 focus:ring-2 focus:ring-primary-500 outline-none text-gray-900"
                   />
                 </div>
-                <button onClick={handleSearch} className="btn bg-primary-600 text-white hover:bg-primary-700 px-8 py-4 whitespace-nowrap font-semibold rounded-xl">Search Jobs</button>
+                <button onClick={handleSearch} className="btn bg-primary-600 text-white hover:bg-primary-700 px-8 py-4 whitespace-nowrap font-semibold rounded-xl">
+                  Search Jobs
+                </button>
               </div>
               <div className="flex flex-wrap gap-2 mt-4">
                 <span className="text-sm text-gray-600">Popular:</span>
@@ -117,7 +140,7 @@ export default function Home() {
             <Link href="/jobs" className="btn btn-primary">View All Jobs</Link>
           </div>
           <div className="grid gap-6">
-            {latestJobs.map(job => (
+            {latestJobs.map((job) => (
               <Link key={job.$id} href={`/jobs/${job.$id}`} className="card hover:shadow-lg transition-shadow border-l-4 border-primary-600">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
@@ -191,9 +214,9 @@ export default function Home() {
       <section className="py-20 bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="rounded-3xl overflow-hidden shadow-2xl">
-            <img 
-              src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&h=400&fit=crop" 
-              alt="Person working on laptop searching for jobs" 
+            <img
+              src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&h=400&fit=crop"
+              alt="Person working on laptop searching for jobs"
               className="w-full h-96 object-cover"
             />
           </div>
@@ -239,9 +262,9 @@ export default function Home() {
             </div>
             <div className="relative">
               <div className="rounded-3xl overflow-hidden shadow-2xl">
-                <img 
-                  src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&h=600&fit=crop" 
-                  alt="Job seeker" 
+                <img
+                  src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&h=600&fit=crop"
+                  alt="Job seeker"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -300,13 +323,70 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Briefcase className="w-8 h-8" />
-            <span className="text-2xl font-bold">JobPortal</span>
+      <footer className="bg-gray-950 text-white">
+        <div className="border-b border-white/10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid gap-10 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
+            <div>
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-11 h-11 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center">
+                  <Briefcase className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-2xl font-bold">JobPortal</span>
+              </div>
+              <p className="text-gray-300 max-w-md leading-7 mb-6">
+                A faster way for job seekers to discover real opportunities and for recruiters to find qualified talent without the usual hiring friction.
+              </p>
+              <div className="space-y-3 text-sm text-gray-300">
+                <div className="flex items-center gap-3">
+                  <Mail className="w-4 h-4 text-primary-400" />
+                  <span>support@jobportal.com</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Phone className="w-4 h-4 text-primary-400" />
+                  <span>+234 800 000 0000</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <MapPin className="w-4 h-4 text-primary-400" />
+                  <span>Lagos, Nigeria</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-gray-400 mb-4">Explore</h3>
+              <div className="space-y-3">
+                <Link href="/jobs" className="block text-gray-300 hover:text-white transition-colors">Browse Jobs</Link>
+                <Link href="/login" className="block text-gray-300 hover:text-white transition-colors">Sign In</Link>
+                <Link href="/register" className="block text-gray-300 hover:text-white transition-colors">Create Account</Link>
+                <Link href="/dashboard" className="block text-gray-300 hover:text-white transition-colors">Dashboard</Link>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-gray-400 mb-4">For Users</h3>
+              <div className="space-y-3">
+                <Link href="/register?role=employee" className="block text-gray-300 hover:text-white transition-colors">Job Seekers</Link>
+                <Link href="/register?role=recruiter" className="block text-gray-300 hover:text-white transition-colors">Recruiters</Link>
+                <Link href="/applications" className="block text-gray-300 hover:text-white transition-colors">Applications</Link>
+                <Link href="/messages" className="block text-gray-300 hover:text-white transition-colors">Messages</Link>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-gray-400 mb-4">Company</h3>
+              <div className="space-y-3">
+                <Link href="/" className="block text-gray-300 hover:text-white transition-colors">About Us</Link>
+                <Link href="/" className="block text-gray-300 hover:text-white transition-colors">Privacy Policy</Link>
+                <Link href="/" className="block text-gray-300 hover:text-white transition-colors">Terms of Service</Link>
+                <Link href="/" className="block text-gray-300 hover:text-white transition-colors">Contact Support</Link>
+              </div>
+            </div>
           </div>
-          <p className="text-gray-400">© 2024 JobPortal. All rights reserved.</p>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row gap-3 md:items-center md:justify-between text-sm text-gray-400">
+          <p>Copyright {currentYear} JobPortal. All rights reserved.</p>
+          <p>Built for modern hiring teams and ambitious job seekers.</p>
         </div>
       </footer>
     </div>
