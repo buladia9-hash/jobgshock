@@ -5,8 +5,15 @@ import { databases } from '@/lib/appwrite';
 import { Query } from 'appwrite';
 import Link from 'next/link';
 import {
-  Briefcase, Users, PlusCircle, CheckCircle,
-  ArrowRight, BarChart2, Star, FileText, Search
+  Briefcase,
+  Users,
+  PlusCircle,
+  CheckCircle,
+  ArrowRight,
+  BarChart2,
+  Star,
+  FileText,
+  Search,
 } from 'lucide-react';
 
 export default function Dashboard() {
@@ -59,6 +66,8 @@ export default function Dashboard() {
         [Query.equal('jobId', jobIds), Query.orderDesc('appliedAt'), Query.limit(5)]
       );
       setRecentApplications(appsResult.documents);
+    } else {
+      setRecentApplications([]);
     }
   };
 
@@ -90,14 +99,13 @@ export default function Dashboard() {
 
   return (
     <div>
-      {/* Welcome Banner */}
       <div className={`rounded-2xl p-8 mb-8 text-white ${isRecruiter ? 'bg-gradient-to-r from-blue-600 to-blue-800' : 'bg-gradient-to-r from-primary-600 to-primary-800'}`}>
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold">Welcome back, {user.name}! 👋</h1>
+              <h1 className="text-3xl font-bold">Welcome back, {user.name}</h1>
               <span className={`text-xs px-3 py-1 rounded-full font-semibold ${isRecruiter ? 'bg-blue-500 text-white' : 'bg-green-500 text-white'}`}>
-                {isRecruiter ? '🏢 Recruiter' : '👤 Job Seeker'}
+                {isRecruiter ? 'Recruiter' : 'Job Seeker'}
               </span>
             </div>
             <p className="text-white/80 text-lg">
@@ -117,7 +125,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {isRecruiter ? (
           <>
@@ -137,7 +144,6 @@ export default function Dashboard() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Jobs Section */}
         <div className="bg-white rounded-xl border p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold">{isRecruiter ? 'My Job Postings' : 'Latest Jobs'}</h2>
@@ -155,7 +161,7 @@ export default function Dashboard() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-sm truncate">{job.title}</h3>
-                  <p className="text-xs text-gray-500">{job.company} • {job.location}</p>
+                  <p className="text-xs text-gray-500">{job.company} - {job.location}</p>
                 </div>
                 <div className="text-right flex-shrink-0">
                   <span className={`text-xs px-2 py-1 rounded-full ${job.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
@@ -174,7 +180,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Applications Section */}
         <div className="bg-white rounded-xl border p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold">{isRecruiter ? 'Recent Applicants' : 'My Applications'}</h2>
@@ -214,7 +219,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Quick Actions */}
       <div className="mt-6 bg-white rounded-xl border p-6">
         <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

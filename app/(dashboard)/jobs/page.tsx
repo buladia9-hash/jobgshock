@@ -1,13 +1,15 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { databases } from '@/lib/appwrite';
 import { Query } from 'appwrite';
 import Link from 'next/link';
 import { Briefcase, MapPin, DollarSign, Building2, TrendingUp, Users, Clock, ArrowRight } from 'lucide-react';
 
-export default function Jobs() {
+function JobsContent() {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
   const [jobs, setJobs] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
@@ -15,6 +17,10 @@ export default function Jobs() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { if (user) loadJobs(); }, [user, typeFilter]);
+  useEffect(() => {
+    setSearch(searchParams.get('search') || '');
+    setLocationFilter(searchParams.get('location') || '');
+  }, [searchParams]);
 
   const loadJobs = async () => {
     setLoading(true);
@@ -151,5 +157,13 @@ export default function Jobs() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function Jobs() {
+  return (
+    <Suspense fallback={<div className="text-center py-12 text-gray-500">Loading jobs...</div>}>
+      <JobsContent />
+    </Suspense>
   );
 }
