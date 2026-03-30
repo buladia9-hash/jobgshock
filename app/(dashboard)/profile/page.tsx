@@ -68,7 +68,7 @@ export default function Profile() {
             <div>
               <p className="font-semibold text-gray-800">Profile Completion</p>
               <p className="text-xs text-gray-500 mt-0.5">
-                {completion === 100 ? '🎉 Your profile is complete!' : 'Complete your profile to stand out'}
+                {completion === 100 ? 'Your profile is complete!' : 'Complete your profile to stand out'}
               </p>
             </div>
             <span className={`text-2xl font-bold ${completion === 100 ? 'text-green-600' : completion >= 60 ? 'text-yellow-600' : 'text-red-500'}`}>
@@ -156,7 +156,7 @@ export default function Profile() {
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">{user.name}</h2>
-                <p className="text-gray-500 mt-1">{user.role === 'recruiter' ? '🏢 Recruiter' : '👤 Job Seeker'}</p>
+                <p className="text-gray-500 mt-1">{user.role === 'recruiter' ? 'Recruiter' : 'Job Seeker'}</p>
                 {user.location && <p className="text-sm text-gray-500 flex items-center gap-1 mt-1"><MapPin className="w-3 h-3" />{user.location}</p>}
               </div>
             </div>

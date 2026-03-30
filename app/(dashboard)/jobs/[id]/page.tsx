@@ -161,7 +161,7 @@ export default function JobDetail() {
               <p className="text-lg text-gray-600 font-medium">{job.company}</p>
               <div className="flex items-center gap-3 mt-2">
                 <span className={`text-xs px-3 py-1 rounded-full font-semibold ${job.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                  {job.status === 'active' ? '● Active' : '● Closed'}
+                  {job.status === 'active' ? 'Active' : 'Closed'}
                 </span>
                 <span className="text-xs px-3 py-1 bg-blue-100 text-blue-700 rounded-full font-medium capitalize">{job.type}</span>
               </div>
@@ -181,7 +181,7 @@ export default function JobDetail() {
           </div>
           <div className="flex items-center gap-2 text-gray-600">
             <DollarSign className="w-4 h-4 text-green-600" />
-            <span className="text-sm">{job.salary.currency} {job.salary.min.toLocaleString()} – {job.salary.max.toLocaleString()}</span>
+            <span className="text-sm">{job.salary.currency} {job.salary.min.toLocaleString()} - {job.salary.max.toLocaleString()}</span>
           </div>
           <div className="flex items-center gap-2 text-gray-600">
             <Clock className="w-4 h-4 text-blue-600" />
@@ -283,7 +283,7 @@ export default function JobDetail() {
                 {app.coverLetter && <p className="text-gray-600 text-sm mb-4 bg-gray-50 rounded-lg p-3 line-clamp-3">{app.coverLetter}</p>}
                 <div className="flex flex-wrap gap-2">
                   {resumeUrls[app.$id] && (
-                    <a href={resumeUrls[app.$id]} target="_blank" rel="noreferrer" className="btn btn-secondary text-xs py-1.5 px-3">📄 View Resume</a>
+                    <a href={resumeUrls[app.$id]} target="_blank" rel="noreferrer" className="btn btn-secondary text-xs py-1.5 px-3">View Resume</a>
                   )}
                   <Link href={`/messages?to=${app.employeeId}&name=${encodeURIComponent(app.employeeName)}`} className="btn btn-secondary text-xs py-1.5 px-3 flex items-center gap-1">
                     <MessageSquare className="w-3 h-3" /> Chat
@@ -295,7 +295,7 @@ export default function JobDetail() {
                     </>
                   )}
                   {app.status === 'shortlisted' && (
-                    <button onClick={() => handleStatusUpdate(app.$id, 'accepted')} className="btn bg-green-600 text-white hover:bg-green-700 text-xs py-1.5 px-3">✓ Accept</button>
+                    <button onClick={() => handleStatusUpdate(app.$id, 'accepted')} className="btn bg-green-600 text-white hover:bg-green-700 text-xs py-1.5 px-3">Accept</button>
                   )}
                 </div>
               </div>

@@ -47,7 +47,7 @@ export default function Home() {
     }
   };
 
-  const handleSearch = (nextSearch = searchQuery, nextLocation = location) => {
+  const handleSearch = (nextSearch: string = searchQuery, nextLocation: string = location) => {
     router.push(`/jobs?search=${encodeURIComponent(nextSearch)}&location=${encodeURIComponent(nextLocation)}`);
   };
 
@@ -111,7 +111,7 @@ export default function Home() {
                     className="w-full pl-12 pr-4 py-4 rounded-xl border-0 focus:ring-2 focus:ring-primary-500 outline-none text-gray-900"
                   />
                 </div>
-                <button onClick={handleSearch} className="btn bg-primary-600 text-white hover:bg-primary-700 px-8 py-4 whitespace-nowrap font-semibold rounded-xl">
+                <button onClick={() => handleSearch()} className="btn bg-primary-600 text-white hover:bg-primary-700 px-8 py-4 whitespace-nowrap font-semibold rounded-xl">
                   Search Jobs
                 </button>
               </div>
