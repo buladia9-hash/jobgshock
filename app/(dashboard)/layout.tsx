@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
@@ -16,7 +16,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const [showHeaderMenu, setShowHeaderMenu] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const headerMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { checkAuth(); }, []);
@@ -43,7 +44,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     setShowHeaderMenu(false);
+    setMobileSidebarOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    document.body.style.overflow = mobileSidebarOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileSidebarOpen]);
 
   const loadNotifications = async () => {
     if (!user) return;
@@ -101,29 +110,52 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
+      {mobileSidebarOpen && (
+        <button
+          type="button"
+          className="fixed inset-0 z-20 bg-gray-900/40 lg:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+          aria-label="Close sidebar"
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-white border-r flex flex-col transition-all duration-300 fixed h-full z-30`}>
+      <aside
+        className={`fixed inset-y-0 left-0 z-30 flex h-full w-72 flex-col border-r bg-white transition-all duration-300 lg:w-auto lg:translate-x-0 ${
+          mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } ${desktopSidebarOpen ? 'lg:w-64' : 'lg:w-20'}`}
+      >
         {/* Logo */}
         <div className="p-4 border-b flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-primary-800 rounded-lg flex items-center justify-center flex-shrink-0">
               <Briefcase className="w-6 h-6 text-white" />
             </div>
-            {sidebarOpen && <span className="text-xl font-bold text-gray-900">JobPortal</span>}
+            {desktopSidebarOpen && <span className="hidden text-xl font-bold text-gray-900 lg:inline">JobPortal</span>}
+            <span className="text-xl font-bold text-gray-900 lg:hidden">JobPortal</span>
           </Link>
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-gray-400 hover:text-gray-600">
+          <button
+            onClick={() => setDesktopSidebarOpen(!desktopSidebarOpen)}
+            className="hidden text-gray-400 hover:text-gray-600 lg:inline-flex"
+            aria-label={desktopSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+          >
             <Menu className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => setMobileSidebarOpen(false)}
+            className="text-gray-400 hover:text-gray-600 lg:hidden"
+            aria-label="Close mobile sidebar"
+          >
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Role Badge */}
-        {sidebarOpen && (
-          <div className="px-4 py-3 border-b">
-            <span className={`text-xs px-3 py-1 rounded-full font-medium ${user.role === 'recruiter' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
-              {user.role === 'recruiter' ? 'Recruiter Account' : 'Job Seeker Account'}
-            </span>
-          </div>
-        )}
+        <div className={`px-4 py-3 border-b ${desktopSidebarOpen ? 'lg:block' : 'lg:hidden'}`}>
+          <span className={`text-xs px-3 py-1 rounded-full font-medium ${user.role === 'recruiter' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
+            {user.role === 'recruiter' ? 'Recruiter Account' : 'Job Seeker Account'}
+          </span>
+        </div>
 
         {/* Nav Items */}
         <nav className="flex-1 p-4 space-y-1">
@@ -133,6 +165,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Link
                 key={item.label}
                 href={item.href}
+                onClick={() => setMobileSidebarOpen(false)}
+                aria-label={item.label}
+                title={!desktopSidebarOpen ? item.label : undefined}
                 className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-all ${
                   isActive
                     ? 'bg-primary-50 text-primary-600 font-semibold'
@@ -140,9 +175,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 }`}
               >
                 <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-primary-600' : ''}`} />
-                {sidebarOpen && <span className="text-sm">{item.label}</span>}
-                {item.label === 'Post a Job' && sidebarOpen && (
-                  <span className="ml-auto bg-primary-600 text-white text-xs px-2 py-0.5 rounded-full">New</span>
+                <span className={`text-sm ${desktopSidebarOpen ? 'lg:inline' : 'lg:hidden'}`}>{item.label}</span>
+                {item.label === 'Post a Job' && (
+                  <span className={`ml-auto bg-primary-600 text-white text-xs px-2 py-0.5 rounded-full ${desktopSidebarOpen ? 'lg:inline-flex' : 'lg:hidden'}`}>
+                    New
+                  </span>
                 )}
               </Link>
             );
@@ -155,22 +192,28 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-primary-800 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
               {user.name.charAt(0).toUpperCase()}
             </div>
-            {sidebarOpen && (
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold truncate">{user.name}</p>
-                <p className="text-xs text-gray-500 truncate">{user.email}</p>
-              </div>
-            )}
+            <div className={`flex-1 min-w-0 ${desktopSidebarOpen ? 'lg:block' : 'lg:hidden'}`}>
+              <p className="text-sm font-semibold truncate">{user.name}</p>
+              <p className="text-xs text-gray-500 truncate">{user.email}</p>
+            </div>
           </div>
         </div>
       </aside>
 
       {/* Main Content */}
-      <div className={`flex-1 flex flex-col ${sidebarOpen ? 'ml-64' : 'ml-20'} transition-all duration-300`}>
+      <div className={`flex-1 flex flex-col transition-all duration-300 ${desktopSidebarOpen ? 'lg:ml-64' : 'lg:ml-20'}`}>
         {/* Top Navbar */}
-        <header className="bg-white border-b px-6 py-3 flex items-center justify-between sticky top-0 z-20">
-          <div className="flex items-center gap-4">
-            <h1 className="text-lg font-semibold text-gray-800">
+        <header className="bg-white border-b px-4 py-3 sm:px-6 flex items-center justify-between sticky top-0 z-10">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className="inline-flex items-center justify-center rounded-lg border border-gray-200 p-2 text-gray-600 transition hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 lg:hidden"
+              onClick={() => setMobileSidebarOpen(true)}
+              aria-label="Open sidebar"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <h1 className="text-base font-semibold text-gray-800 sm:text-lg">
               {user.role === 'recruiter' ? 'Recruiter Dashboard' : 'Job Seeker Dashboard'}
             </h1>
           </div>
@@ -193,7 +236,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </button>
 
               {showHeaderMenu && (
-                <div className="absolute right-0 top-14 w-[22rem] overflow-hidden rounded-2xl border bg-white shadow-xl z-50">
+                <div className="absolute right-0 top-14 z-50 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border bg-white shadow-xl">
                   <div className="border-b px-4 py-4">
                     <div className="flex items-center justify-between gap-3">
                       <div>
@@ -211,6 +254,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       {user.role === 'recruiter' && (
                         <Link
                           href="/jobs/create"
+                          onClick={() => setShowHeaderMenu(false)}
                           className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-gray-700 transition hover:bg-gray-50"
                         >
                           <PlusCircle className="w-4 h-4 text-primary-600" />
@@ -219,6 +263,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       )}
                       <Link
                         href="/messages"
+                        onClick={() => setShowHeaderMenu(false)}
                         className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-gray-700 transition hover:bg-gray-50"
                       >
                         <MessageSquare className="w-4 h-4 text-primary-600" />
@@ -226,6 +271,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       </Link>
                       <Link
                         href="/profile"
+                        onClick={() => setShowHeaderMenu(false)}
                         className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-gray-700 transition hover:bg-gray-50"
                       >
                         <User className="w-4 h-4 text-primary-600" />
@@ -233,6 +279,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       </Link>
                       <Link
                         href="/profile?tab=settings"
+                        onClick={() => setShowHeaderMenu(false)}
                         className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-gray-700 transition hover:bg-gray-50"
                       >
                         <Settings className="w-4 h-4 text-primary-600" />
@@ -292,7 +339,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 overflow-auto p-4 sm:p-6">
           {children}
         </main>
       </div>
