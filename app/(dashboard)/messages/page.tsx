@@ -155,7 +155,7 @@ function MessagesContent() {
         ),
       ]);
 
-      const allMessages = [...sent.documents, ...received.documents] as PortalMessage[];
+      const allMessages = [...sent.documents, ...received.documents] as unknown as PortalMessage[];
       const convoMap = new Map<string, ConversationSummary>();
 
       allMessages.forEach((msg) => {
@@ -224,9 +224,9 @@ function MessagesContent() {
         ),
       ]);
 
-      const all = [...sent.documents, ...received.documents].sort(
+      const all = ([...sent.documents, ...received.documents].sort(
         (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-      ) as PortalMessage[];
+      ) as unknown) as PortalMessage[];
       setMessages(all);
 
       const unreadMessages = received.documents.filter((msg) => !msg.read);
