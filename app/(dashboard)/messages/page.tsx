@@ -4,13 +4,12 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ID, Query } from 'appwrite';
 import {
-  ArrowUpRight,
   Clock3,
   Inbox,
   MessageSquare,
   Search,
   SendHorizontal,
-  ShieldCheck,
+  ArrowUpRight,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/lib/auth';
@@ -87,6 +86,10 @@ function getInitials(name?: string) {
   return initials || 'U';
 }
 
+function isNearBottom(element: HTMLDivElement, threshold = 96) {
+  return element.scrollHeight - element.scrollTop - element.clientHeight <= threshold;
+}
+
 function MessagesContent() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
@@ -98,8 +101,11 @@ function MessagesContent() {
   const [sending, setSending] = useState(false);
   const [loadingConversations, setLoadingConversations] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const messagesViewportRef = useRef<HTMLDivElement>(null);
   const userNameCache = useRef<Map<string, string>>(new Map());
+  const shouldStickToBottomRef = useRef(true);
+  const previousConversationIdRef = useRef<string | null>(null);
+  const previousLastMessageIdRef = useRef<string | null>(null);
 
   const toId = searchParams.get('to');
   const toName = searchParams.get('name');
@@ -311,8 +317,22 @@ function MessagesContent() {
   }, [conversations, activeConvo, toId]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    const viewport = messagesViewportRef.current;
+    const activeConversationId = activeConvo?.userId ?? null;
+    const latestMessageId = messages.length > 0 ? messages[messages.length - 1].$id : null;
+    const conversationChanged = previousConversationIdRef.current !== activeConversationId;
+    const latestMessageChanged = previousLastMessageIdRef.current !== latestMessageId;
+
+    if (viewport && (conversationChanged || (latestMessageChanged && shouldStickToBottomRef.current))) {
+      viewport.scrollTo({
+        top: viewport.scrollHeight,
+        behavior: conversationChanged ? 'auto' : 'smooth',
+      });
+    }
+
+    previousConversationIdRef.current = activeConversationId;
+    previousLastMessageIdRef.current = latestMessageId;
+  }, [activeConvo?.userId, messages]);
 
   useEffect(() => {
     if (!activeConvo) return;
@@ -332,37 +352,8 @@ function MessagesContent() {
   });
 
   const activeConversationName = activeConvo?.userName || 'Messages';
-  const totalUnreadCount = conversations.reduce((total, convo) => total + convo.unreadCount, 0);
-
   return (
     <div className="space-y-6">
-      <section className="overflow-hidden rounded-[28px] border border-slate-200/80 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 px-6 py-7 text-white shadow-sm">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-2xl">
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-200">
-              <ShieldCheck className="h-3.5 w-3.5" />
-              Professional inbox
-            </div>
-            <h1 className="text-3xl font-bold tracking-tight md:text-4xl">Messages</h1>
-            <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300 md:text-base">
-              Keep conversations organized, respond faster, and stay on top of every
-              candidate or recruiter touchpoint.
-            </p>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur">
-              <p className="text-xs uppercase tracking-[0.18em] text-slate-300">Conversations</p>
-              <p className="mt-2 text-2xl font-semibold">{conversations.length}</p>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur">
-              <p className="text-xs uppercase tracking-[0.18em] text-slate-300">Unread</p>
-              <p className="mt-2 text-2xl font-semibold">{totalUnreadCount}</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <div className="grid gap-6 xl:grid-cols-[360px,minmax(0,1fr)]">
         <aside className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
           <div className="border-b border-slate-200 px-5 py-5">
@@ -513,7 +504,13 @@ function MessagesContent() {
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.08),_transparent_32%),linear-gradient(to_bottom,_#ffffff,_#f8fafc)] px-4 py-5 sm:px-6">
+              <div
+                ref={messagesViewportRef}
+                onScroll={(event) => {
+                  shouldStickToBottomRef.current = isNearBottom(event.currentTarget);
+                }}
+                className="flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.08),_transparent_32%),linear-gradient(to_bottom,_#ffffff,_#f8fafc)] px-4 py-5 sm:px-6"
+              >
                 {loadingMessages ? (
                   <div className="space-y-4">
                     {[1, 2, 3].map((item) => (
@@ -589,7 +586,6 @@ function MessagesContent() {
                         </div>
                       );
                     })}
-                    <div ref={bottomRef} />
                   </div>
                 )}
               </div>
